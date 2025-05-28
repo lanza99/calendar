@@ -1,0 +1,19 @@
+<app-navbar></app-navbar>
+
+<div class="cal-header"
+     (pointerdown)="startSwipe($event)"
+     (pointerup)="endSwipe($event)">
+  <button class="nav-btn" (click)="prev()">&larr;</button>
+  <div class="cal-title">{{ title }}</div>
+  <button class="nav-btn" (click)="next()">&rarr;</button>
+  <button class="menu-btn" (click)="menuOpen = !menuOpen">&#9776;</button>
+  <div class="menu" *ngIf="menuOpen">
+    <button (click)="setView('month'); menuOpen=false">Mese</button>
+    <button (click)="setView('week');  menuOpen=false">Settimana</button>
+    <button (click)="setView('day');   menuOpen=false">Giorno</button>
+  </div>
+</div>
+
+<app-month *ngIf="view==='month'" [baseDate]="base"></app-month>
+<app-week  *ngIf="view==='week'"  [baseDate]="base"></app-week>
+<app-day   *ngIf="view==='day'"   [baseDate]="base"></app-day>

@@ -1,0 +1,35 @@
+/* You can add global styles to this file, and also import other style files */
+
+
+*{
+    margin: 0 0;
+    padding: 0 0;
+    
+}
+:root {
+  --purple:  rgb(145, 0, 145);
+  --white: #ffffff;
+}
+
+/* Menu a tendina */
+.menu {
+  background-color: var(--purple);
+  color: var(--white);
+  border-radius: 0.5rem;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+}
+.menu button {
+  color: var(--white);
+}
+.menu button:hover {
+  background: rgba(255,255,255,0.15);
+}
+
+/* FAB */
+.fab {
+  background-color: var(--purple);
+  color: var(--white);
+}
+.fab:hover {
+  transform: scale(1.05);
+}

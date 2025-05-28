@@ -1,0 +1,16 @@
+
+
+<a [routerLink]="['/note-editor', noteFetched.id]">
+    <div class="container">
+        <div class="title-creator-box">
+            <h1 class="title"> {{noteFetched.title}}</h1>
+            <h2 class="creator"> - {{noteFetched.creator}}</h2>
+        </div>
+
+        <div class="content">
+            <p class="note-body"> {{noteFetched.body}} </p>
+        </div>
+
+        <h2 id="last-modified"> {{noteFetched.lastModificationDate | date:'dd MMM yyyy, hh:mm' }} </h2>
+    </div>
+</a>

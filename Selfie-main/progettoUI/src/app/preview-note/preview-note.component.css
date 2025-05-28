@@ -1,0 +1,53 @@
+.container{
+    background-color: rgb(81, 81, 81);
+    border-radius: 1rem;
+    padding: 0.5rem 1rem 0.5rem 1rem;
+    margin: 0.5rem 0.5rem 0 0.5rem;
+}
+
+
+.title-creator-box{
+    display: flex;
+    flex-direction: column;
+    align-items: start;
+
+    white-space: nowrap; /* Impedisce il ritorno a capo */
+    overflow: hidden; /* Nasconde il testo in eccesso */
+    text-overflow: ellipsis; /* Aggiunge i tre punti ... */
+
+}
+
+.title-creator-box > h2{
+    margin-left: 0.5rem;
+}
+
+.content{
+    
+}
+
+h1, h2, p{
+    font-size: 1.5rem;
+    font-weight: 500;
+    font-family: Arial, Helvetica, sans-serif;
+    letter-spacing: 0.05rem;
+    word-spacing: 0.02rem;
+    text-align: center;
+    color: rgb(229, 229, 229);
+
+
+
+}
+
+h2{
+    font-size: 1rem;
+    letter-spacing: normal;
+}
+
+p{
+    font-size: 1rem;
+    
+}
+
+a{
+    text-decoration: none;
+}

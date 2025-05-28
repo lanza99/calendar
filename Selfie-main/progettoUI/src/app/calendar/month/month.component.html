@@ -1,0 +1,23 @@
+<div class="month-grid"
+     (pointerdown)="startSwipe($event)"
+     (pointerup)="endSwipe($event)">
+  <div class="weekday" *ngFor="let w of ['Lun','Mar','Mer','Gio','Ven','Sab','Dom']">{{w}}</div>
+  <ng-container *ngFor="let week of weeks">
+    <ng-container *ngFor="let day of week">
+      <div class="day-cell" [class.out]="day.getMonth() !== baseDate.getMonth()">
+        <div class="num">{{ day.getDate() }}</div>
+        <div *ngFor="let ev of eventsForDay(day)"
+             class="ev-label"
+             [style.background]="ev.color"
+             >
+          {{ ev.title }}
+        </div>
+      </div>
+    </ng-container>
+  </ng-container>
+</div>
+<button class="fab" (click)="showForm=true">+</button>
+<app-event-form *ngIf="showForm"
+                (newEvent)="loadEvents()"
+                (newEvent)="showForm=false">
+</app-event-form>

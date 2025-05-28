@@ -1,0 +1,53 @@
+<form class="event-form" (ngSubmit)="createEvent()">
+  <div class="form-group">
+    <label for="title">Titolo:</label>
+    <input id="title" name="title" type="text" [(ngModel)]="title" required />
+  </div>
+
+  <div class="form-group">
+    <label for="date">Data:</label>
+    <input id="date" name="date" type="date" [(ngModel)]="date" required />
+  </div>
+
+  <div class="form-group">
+    <label>
+      <input type="checkbox" [(ngModel)]="allDay" name="allDay" (change)="onAllDayToggle()" /> Tutto il giorno
+    </label>
+  </div>
+
+  <div class="form-group">
+    <label for="startTime">Ora inizio:</label>
+    <input id="startTime" name="startTime" type="time" [(ngModel)]="startTime" [disabled]="allDay" [required]="!allDay" />
+  </div>
+
+  <div class="form-group">
+    <label for="endTime">Ora fine:</label>
+    <input id="endTime" name="endTime" type="time" [(ngModel)]="endTime" [disabled]="allDay" [required]="!allDay" />
+  </div>
+
+  <div class="form-group">
+    <label for="recurrence">Ricorrenza:</label>
+    <select id="recurrence" name="recurrence" [(ngModel)]="recurrence">
+      <option value="">Nessuna</option>
+      <option value="daily">Giornaliera</option>
+      <option value="weekly">Settimanale</option>
+      <option value="monthly">Mensile</option>
+      <option value="yearly">Annuale</option>
+    </select>
+  </div>
+
+  <div class="form-group">
+    <label for="reminder">Promemoria (minuti prima):</label>
+    <input id="reminder" name="reminder" type="number" [(ngModel)]="reminder" min="0" />
+  </div>
+
+  <button type="submit"
+          [disabled]="!title || !date || (!allDay && (!startTime || !endTime))">
+    Crea Evento
+  </button>
+</form>
+
+<div class="form-group">
+  <label for="color">Colore evento:</label>
+  <input id="color" name="color" type="color" [(ngModel)]="color" />
+</div>

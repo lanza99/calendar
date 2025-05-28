@@ -1,0 +1,87 @@
+:root {
+  --purple: #6f42c1;
+  --white: #ffffff;
+  --black: #000000;
+}
+
+.cal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background-color: var(--purple);
+  color: var(--white);
+  padding: 0.5rem 1rem;
+  position: relative;
+  user-select: none;
+}
+
+/* Titolo centrale */
+.cal-title {
+  flex: 1;
+  text-align: center;
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: var(--white);
+}
+
+/* Bottoni di navigazione e menu */
+.nav-btn,
+.menu-btn {
+  background: none;
+  border: none;
+  color: var(--white);
+  font-size: 1.2rem;
+  cursor: pointer;
+  padding: 0.25rem;
+}
+
+/*Tendina di selezione vista */
+
+
+.menu {
+  position: absolute;
+  top: 100%;
+  right: 1rem;
+  background-color: var(--purple);  /* sfondo viola pieno */
+  color: var(--white);
+  border-radius: 0.5rem;
+  overflow: hidden;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+  z-index: 10;
+  min-width: 8rem;
+}
+
+.menu button {
+  display: block;
+  width: 100%;
+  padding: 0.6rem 1rem;
+  background: none;
+  border: none;
+  text-align: left;
+  color: var(--white);
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.menu button:hover {
+  background: rgba(255,255,255,0.15);
+}
+
+/* Forza lo sfondo viola pieno e rimuove qualsiasi trasparenza */
+.menu {
+  background-color: var(--purple) !important;
+  opacity: 1 !important;
+}
+
+/* Forza il colore del testo bianco */
+.menu, 
+.menu button {
+  color: var(--white) !important;
+}
+
+/* Se ci fossero bordi o sfondi semi */
+.menu *,
+.menu button:hover {
+  background: none !important;
+}

@@ -1,0 +1,27 @@
+<div class="week-header"
+     (pointerdown)="startSwipe($event)"
+     (pointerup)="endSwipe($event)">
+  <div class="time-col"></div>
+  <div class="day-col-header" *ngFor="let d of days">
+    {{ d | date:'dd MMM' }}
+  </div>
+</div>
+<div class="week-body">
+  <div class="time-col">
+    <div class="hour" *ngFor="let h of hours">{{h}}:00</div>
+  </div>
+  <div class="day-col" *ngFor="let d of days">
+    <div class="slot" *ngFor="let h of hours">
+      <div *ngFor="let ev of eventsForSlot(d, h)"
+           class="fill"
+           [style.background]="ev.color">
+        {{ ev.title }}
+      </div>
+    </div>
+  </div>
+</div>
+<button class="fab" (click)="showForm=true">+</button>
+<app-event-form *ngIf="showForm"
+                (newEvent)="loadEvents()"
+                (newEvent)="showForm=false">
+</app-event-form>

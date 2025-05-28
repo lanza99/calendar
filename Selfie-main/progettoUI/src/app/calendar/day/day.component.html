@@ -1,0 +1,24 @@
+<div class="day-header"
+     (pointerdown)="startSwipe($event)"
+     (pointerup)="endSwipe($event)">
+  {{ baseDate | date:'EEEE, dd MMMM yyyy' }}
+</div>
+<div class="day-body">
+  <div class="time-col">
+    <div class="hour" *ngFor="let h of hours">{{h}}:00</div>
+  </div>
+  <div class="day-col">
+    <div class="slot" *ngFor="let h of hours">
+      <div *ngFor="let ev of eventsForHour(h)"
+           class="fill"
+           [style.background]="ev.color">
+        {{ ev.title }}
+      </div>
+    </div>
+  </div>
+</div>
+<button class="fab" (click)="showForm=true">+</button>
+<app-event-form *ngIf="showForm"
+                (newEvent)="loadEvents()"
+                (newEvent)="showForm=false">
+</app-event-form>

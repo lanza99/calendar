@@ -1,0 +1,296 @@
+:root {
+    --purple: rgb(123, 31, 162);
+    --violet: rgb(103, 58, 183);
+    --pink: rgb(244, 143, 177);
+    --bblack: rgb(10, 10, 10);
+}
+
+
+header{
+    display: flex;
+    flex-direction: row;
+    padding: 0 1rem;
+
+    background-color: rgb(51, 51, 51);
+}
+
+p{
+    text-align: center;
+    font-size: 0.9rem;
+    font-weight: 500;
+    font-family: Arial, Helvetica, sans-serif;
+}
+label{
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 0.7rem;
+}
+h1 {
+    font-size: 1.5rem;
+    font-weight: 500;
+    font-family: Arial, Helvetica, sans-serif;
+    letter-spacing: 0.1rem;
+    text-align: center;
+    color: rgb(229, 229, 229);
+}
+
+h2{
+    font-size: 0.8rem;
+    font-weight: 500;
+    font-family: Arial, Helvetica, sans-serif;
+    letter-spacing: 0.1rem;
+    text-align: center;
+    color: rgb(229, 229, 229);
+}
+
+a{
+    text-decoration: none;
+}
+
+svg{
+    height: 1.2rem;
+    width: 1.2rem;
+    color: rgb(186, 186, 186);
+}    
+
+
+
+.navbar-tabs{
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.title-container{
+    margin: 0;
+    padding: 0;
+    width: 100%;
+}
+
+                  
+@keyframes background-pan {
+    from {
+      background-position: 0% center;
+    }
+    to {
+      background-position: -200% center;
+    }
+}
+.sep{
+    height: 2px;
+    background-image: linear-gradient(to right, violet, purple);
+    background-size: 200%;
+    animation: background-pan 3s ease infinite;
+}
+
+
+body{
+    padding-bottom: 1rem;
+    width: 100vw;
+    height: auto;
+    background-color: rgb(81, 81, 81);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+
+    overflow: auto;
+}
+
+.calendar, .notes, .pomos{
+    width: 95%;
+    border-radius: 0.6rem;
+    margin-top: 0.7rem;
+}
+.calendar-header, .notes-header, .pomos-header{
+    padding: 1rem 2rem;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid rgb(51, 51, 51);
+
+}
+.notes-header, .pomos-header{
+    justify-content: start;
+}
+.calendar{
+    background-color: rgb(200, 200, 200);
+}
+h1{
+    color: rgb(51, 51, 51);
+    font-size: 1rem;
+    
+}
+.calendar-content, .notes-content, .pomos-content{
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+#calendar-header-title{
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+}
+
+.calendar-content{
+    min-height: 30rem;
+}
+.notes-content, .pomos-content{
+    min-height: 10rem;
+}
+
+
+
+.notes{
+    background-color: rgb(200, 200, 200);
+    min-height: 1rem;
+}
+
+.pomos{
+    background-color: rgb(200, 200, 200);
+}
+
+
+svg{
+    color: black;
+    height: 1.5rem;
+    width: 1.5rem;
+    margin-right: 0.5rem;
+}
+
+
+
+.switch {
+    position: relative;
+    display: inline-block;
+    width: 30px;
+    height: 18px;
+    margin: 0 0.3rem;
+  }
+  /* Hide default HTML checkbox */
+  .switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+  }
+  /* The slider */
+  .slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgb(176, 78, 206);
+    -webkit-transition: .4s;
+    transition: .4s;
+  } 
+  .slider:before {
+    position: absolute;
+    content: "";
+    height: 14px;
+    width: 14px;
+    left: 2px;
+    bottom: 2px;
+    background-color: white;
+    -webkit-transition: .4s;
+    transition: .4s;
+  }
+  input:checked + .slider {
+    background-color: #434343;
+  }
+  input:checked + .slider:before {
+    -webkit-transform: translateX(12px);
+    -ms-transform: translateX(12px);
+    transform: translateX(12px);
+  }
+  /* Rounded sliders */
+  .slider.round {
+    border-radius: 34px;
+  }
+  .slider.round:before {
+    border-radius: 50%;
+  }
+  .day-week-selector{
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+}
+
+
+
+.send-message{
+    height: 3rem;
+    width: 3rem;
+    position: fixed;
+    bottom: 2rem;
+    right: 1rem;
+
+    background-color: rgb(229, 229, 229);
+    border-radius: 0.4rem;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.send-message > svg{
+    height: 2rem;
+    width: 2rem;
+
+    color:rgb(81,81,81);
+    
+}
+
+
+footer{
+    background-color: rgb(81,81,81);
+    width: 100vw;
+    height: auto;
+}
+
+.footer-container{
+    padding: 1rem 0;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-around;
+
+}
+
+.footer-links{
+    display: flex;
+    flex-direction: column;
+    align-items: start;
+
+}
+
+/* Wrapper per scalare o limitare la preview */
+.calendar-preview-wrapper {
+  width: 100%;            /* si adatta al 95% .calendar width */
+  max-width: 350px;       /* non troppo larga */
+  margin: 0 auto;         /* centrata */
+  transform: scale(0.8);  /* riduce al 80% */
+  transform-origin: top center;
+  overflow: hidden;       /* nasconde overflow */
+}
+
+.calendar-preview-wrapper {
+  width: 100%;
+  max-width: 350px;
+  margin: 0 auto;
+  transform: scale(0.8);
+  transform-origin: top center;
+  overflow: hidden;
+}
+
+
+/* Se vuoi un bordo attorno alla preview 
+.calendar-preview-wrapper app-month {
+  border: 1px solid #ccc;
+  border-radius: 0.5rem;
+  background: white;
+}
+*/

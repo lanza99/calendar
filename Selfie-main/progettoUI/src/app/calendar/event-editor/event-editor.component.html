@@ -1,0 +1,33 @@
+<form [formGroup]="form" (ngSubmit)="save()" class="editor-form">
+  <label>Title
+    <input formControlName="title" required>
+  </label>
+  <label>Date
+    <input type="date" formControlName="date" required>
+  </label>
+  <label>
+    <input type="checkbox" formControlName="allDay"> All Day
+  </label>
+  <div *ngIf="!form.value.allDay">
+    <label>Start
+      <input type="time" formControlName="startTime">
+    </label>
+    <label>End
+      <input type="time" formControlName="endTime">
+    </label>
+  </div>
+  <label>Reminder (min):
+    <input type="number" formControlName="reminderMinutes">
+  </label>
+  <label>Recurrence:
+    <select formControlName="recurrence">
+      <option *ngFor="let r of recurrences" [value]="r">{{ r }}</option>
+    </select>
+  </label>
+  <label>Color:
+    <select formControlName="color">
+      <option *ngFor="let c of colors" [value]="c">◼︎</option>
+    </select>
+  </label>
+  <button type="submit">{{ editing ? 'Update' : 'Create' }}</button>
+</form>
