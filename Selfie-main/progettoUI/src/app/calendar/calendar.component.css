@@ -1,87 +1,51 @@
-:root {
-  --purple: #6f42c1;
-  --white: #ffffff;
-  --black: #000000;
-}
-
-.cal-header {
+.calendar-header {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: center;
   background-color: var(--purple);
-  color: var(--white);
-  padding: 0.5rem 1rem;
-  position: relative;
-  user-select: none;
+  color: #fff;
+  padding: 0.75rem;
 }
 
-/* Titolo centrale */
-.cal-title {
-  flex: 1;
-  text-align: center;
-  font-size: 1.2rem;
-  font-weight: 600;
-  color: var(--white);
-}
-
-/* Bottoni di navigazione e menu */
-.nav-btn,
-.menu-btn {
+.calendar-header .nav-btn {
   background: none;
   border: none;
-  color: var(--white);
-  font-size: 1.2rem;
+  color: #fff;
+  font-size: 1.5rem;
   cursor: pointer;
-  padding: 0.25rem;
+  margin: 0 1rem;
 }
 
-/*Tendina di selezione vista */
-
-
-.menu {
-  position: absolute;
-  top: 100%;
-  right: 1rem;
-  background-color: var(--purple);  /* sfondo viola pieno */
-  color: var(--white);
-  border-radius: 0.5rem;
-  overflow: hidden;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-  z-index: 10;
-  min-width: 8rem;
-}
-
-.menu button {
-  display: block;
-  width: 100%;
-  padding: 0.6rem 1rem;
-  background: none;
-  border: none;
-  text-align: left;
-  color: var(--white);
+.current-label {
+  font-size: 1.1rem;
   font-weight: 500;
+  text-transform: capitalize;
+}
+
+.view-selector {
+  display: flex;
+  justify-content: center;
+  background-color: #f0f0f0;
+}
+
+.view-selector .tab {
+  flex: 1;
+  padding: 0.75rem;
+  border: none;
   cursor: pointer;
-  transition: background 0.2s ease;
+  background-color: #e0e0e0;
+  font-weight: 500;
+  text-transform: uppercase;
+  transition: background-color 0.2s;
 }
 
-.menu button:hover {
-  background: rgba(255,255,255,0.15);
+.view-selector .tab.active,
+.view-selector .tab:hover {
+  background-color: var(--purple);
+  color: #fff;
 }
 
-/* Forza lo sfondo viola pieno e rimuove qualsiasi trasparenza */
-.menu {
-  background-color: var(--purple) !important;
-  opacity: 1 !important;
-}
-
-/* Forza il colore del testo bianco */
-.menu, 
-.menu button {
-  color: var(--white) !important;
-}
-
-/* Se ci fossero bordi o sfondi semi */
-.menu *,
-.menu button:hover {
-  background: none !important;
+.views-container {
+  margin-top: 1rem;
+  /* lascia che le viste “Day/Week/Month” si gestiscano da sole la propria altezza/scorrimento */
 }

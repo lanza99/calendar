@@ -1,19 +1,45 @@
 <app-navbar></app-navbar>
 
-<div class="cal-header"
-     (pointerdown)="startSwipe($event)"
-     (pointerup)="endSwipe($event)">
-  <button class="nav-btn" (click)="prev()">&larr;</button>
-  <div class="cal-title">{{ title }}</div>
-  <button class="nav-btn" (click)="next()">&rarr;</button>
-  <button class="menu-btn" (click)="menuOpen = !menuOpen">&#9776;</button>
-  <div class="menu" *ngIf="menuOpen">
-    <button (click)="setView('month'); menuOpen=false">Mese</button>
-    <button (click)="setView('week');  menuOpen=false">Settimana</button>
-    <button (click)="setView('day');   menuOpen=false">Giorno</button>
-  </div>
+<!-- HEADER PRINCIPALE -->
+<div class="calendar-header">
+  <button class="nav-btn" (click)="prev()">&#8249;</button>
+
+  <!-- Mostra etichetta diversa in base alla vista -->
+  <span class="current-label" *ngIf="view === 'day'">
+    {{ getCurrentLabel() }}
+  </span>
+  <span class="current-label" *ngIf="view === 'week'">
+    {{ getWeekLabel() }}
+  </span>
+  <span class="current-label" *ngIf="view === 'month'">
+    {{ getMonthLabel() }}
+  </span>
+
+  <button class="nav-btn" (click)="next()">&#8250;</button>
 </div>
 
-<app-month *ngIf="view==='month'" [baseDate]="base"></app-month>
-<app-week  *ngIf="view==='week'"  [baseDate]="base"></app-week>
-<app-day   *ngIf="view==='day'"   [baseDate]="base"></app-day>
+<!-- NAVBAR PER SELEZIONE VISTA -->
+<div class="view-selector">
+  <button class="tab"
+          [class.active]="view === 'day'"
+          (click)="setView('day')">
+    Giorno
+  </button>
+  <button class="tab"
+          [class.active]="view === 'week'"
+          (click)="setView('week')">
+    Settimana
+  </button>
+  <button class="tab"
+          [class.active]="view === 'month'"
+          (click)="setView('month')">
+    Mese
+  </button>
+</div>
+
+<!-- VISTE CORRISPONDENTI -->
+<div class="views-container">
+  <app-day   *ngIf="view==='day'"   [baseDate]="currentDate"></app-day>
+  <app-week  *ngIf="view==='week'"  [baseDate]="currentDate"></app-week>
+  <app-month *ngIf="view==='month'" [baseDate]="currentDate"></app-month>
+</div>

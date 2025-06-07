@@ -1,53 +1,75 @@
-<form class="event-form" (ngSubmit)="createEvent()">
-  <div class="form-group">
-    <label for="title">Titolo:</label>
-    <input id="title" name="title" type="text" [(ngModel)]="title" required />
+<div class="form-backdrop">
+  <div class="form-modal">
+    <h2 *ngIf="!isEditMode">Crea Nuovo Evento</h2>
+    <h2 *ngIf="isEditMode">Modifica Evento</h2>
+
+    <form [formGroup]="form" (ngSubmit)="submit()">
+      <label for="title">Titolo</label>
+      <input id="title" formControlName="title" type="text" />
+
+      <label for="description">Descrizione</label>
+      <textarea id="description" formControlName="description" rows="2"></textarea>
+
+      <div class="dates">
+        <div>
+          <label for="startDate">Data inizio</label>
+          <input id="startDate" formControlName="startDate" type="date" />
+        </div>
+        <div>
+          <label for="endDate">Data fine</label>
+          <input id="endDate" formControlName="endDate" type="date" />
+        </div>
+      </div>
+
+      <div class="all-day-row">
+        <label class="big-switch">
+          <input type="checkbox" formControlName="allDay" />
+          Tutto il giorno
+        </label>
+      </div>
+
+      <div class="times" *ngIf="!form.get('allDay')?.value">
+        <div class="time-pair">
+          <label for="startHour">Ora inizio</label>
+          <select id="startHour" formControlName="startHour">
+            <option *ngFor="let h of hours" [value]="h">{{ h }}</option>
+          </select>
+          <span>:</span>
+          <select id="startMinute" formControlName="startMinute">
+            <option *ngFor="let m of minutes" [value]="m">{{ m }}</option>
+          </select>
+        </div>
+        <div class="time-pair">
+          <label for="endHour">Ora fine</label>
+          <select id="endHour" formControlName="endHour">
+            <option *ngFor="let h of hours" [value]="h">{{ h }}</option>
+          </select>
+          <span>:</span>
+          <select id="endMinute" formControlName="endMinute">
+            <option *ngFor="let m of minutes" [value]="m">{{ m }}</option>
+          </select>
+        </div>
+      </div>
+
+      <label for="reminder">Ricorda (minuti)</label>
+      <input id="reminder" formControlName="reminderMinutes" type="number" min="0" />
+
+      <label for="recurrence">Ripetizione</label>
+      <select id="recurrence" formControlName="recurrence">
+        <option value="none">Nessuna</option>
+        <option value="daily">Giornaliera</option>
+        <option value="weekly">Settimanale</option>
+        <option value="monthly">Mensile</option>
+        <option value="yearly">Annuale</option>
+      </select>
+
+      <label for="color">Colore</label>
+      <input id="color" formControlName="color" type="color" />
+
+      <div class="form-buttons">
+        <button type="submit">{{ isEditMode ? 'Aggiorna' : 'Crea' }}</button>
+        <button type="button" (click)="cancel()">Annulla</button>
+      </div>
+    </form>
   </div>
-
-  <div class="form-group">
-    <label for="date">Data:</label>
-    <input id="date" name="date" type="date" [(ngModel)]="date" required />
-  </div>
-
-  <div class="form-group">
-    <label>
-      <input type="checkbox" [(ngModel)]="allDay" name="allDay" (change)="onAllDayToggle()" /> Tutto il giorno
-    </label>
-  </div>
-
-  <div class="form-group">
-    <label for="startTime">Ora inizio:</label>
-    <input id="startTime" name="startTime" type="time" [(ngModel)]="startTime" [disabled]="allDay" [required]="!allDay" />
-  </div>
-
-  <div class="form-group">
-    <label for="endTime">Ora fine:</label>
-    <input id="endTime" name="endTime" type="time" [(ngModel)]="endTime" [disabled]="allDay" [required]="!allDay" />
-  </div>
-
-  <div class="form-group">
-    <label for="recurrence">Ricorrenza:</label>
-    <select id="recurrence" name="recurrence" [(ngModel)]="recurrence">
-      <option value="">Nessuna</option>
-      <option value="daily">Giornaliera</option>
-      <option value="weekly">Settimanale</option>
-      <option value="monthly">Mensile</option>
-      <option value="yearly">Annuale</option>
-    </select>
-  </div>
-
-  <div class="form-group">
-    <label for="reminder">Promemoria (minuti prima):</label>
-    <input id="reminder" name="reminder" type="number" [(ngModel)]="reminder" min="0" />
-  </div>
-
-  <button type="submit"
-          [disabled]="!title || !date || (!allDay && (!startTime || !endTime))">
-    Crea Evento
-  </button>
-</form>
-
-<div class="form-group">
-  <label for="color">Colore evento:</label>
-  <input id="color" name="color" type="color" [(ngModel)]="color" />
 </div>

@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';         // <— aggiunto
 import { FormBuilder, ReactiveFormsModule } from '@angular/forms';
 import { RouterModule, ActivatedRoute, Router } from '@angular/router';
-import { EventService, CalendarEvent } from '../services/event.service';
+import { EventService, CalendarEvent } from '../../services/event.service';
 
 @Component({
   selector: 'app-event-editor',

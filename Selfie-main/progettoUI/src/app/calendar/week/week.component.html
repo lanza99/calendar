@@ -1,27 +1,35 @@
-<div class="week-header"
-     (pointerdown)="startSwipe($event)"
-     (pointerup)="endSwipe($event)">
+<div class="week-header">
   <div class="time-col"></div>
-  <div class="day-col-header" *ngFor="let d of days">
-    {{ d | date:'dd MMM' }}
-  </div>
+  <ng-container *ngFor="let d of days">
+    <div class="day-col-header">
+      {{ d | date:'dd' }} {{ d | date:'EEE' }}
+    </div>
+  </ng-container>
 </div>
+
 <div class="week-body">
   <div class="time-col">
-    <div class="hour" *ngFor="let h of hours">{{h}}:00</div>
+    <div class="hour" *ngFor="let h of hours">{{ h }}:00</div>
   </div>
-  <div class="day-col" *ngFor="let d of days">
-    <div class="slot" *ngFor="let h of hours">
-      <div *ngFor="let ev of eventsForSlot(d, h)"
-           class="fill"
-           [style.background]="ev.color">
-        {{ ev.title }}
+  <ng-container *ngFor="let d of days">
+    <div class="day-col">
+      <div class="slot" *ngFor="let h of hours">
+        <div *ngFor="let ev of eventsForSlot(d,h)"
+             class="fill"
+             [style.background]="ev.color"
+             (click)="openDetail(ev)">
+          {{ ev.title }}
+        </div>
       </div>
     </div>
-  </div>
+  </ng-container>
 </div>
-<button class="fab" (click)="showForm=true">+</button>
+
+<button class="fab" (click)="openNew()">+</button>
+
 <app-event-form *ngIf="showForm"
-                (newEvent)="loadEvents()"
-                (newEvent)="showForm=false">
+                [formData]="selectedEvent"
+                (newEvent)="saveEvent($event)"
+                (updateEvent)="saveEvent($event)"
+                (formClosed)="closeForm()">
 </app-event-form>

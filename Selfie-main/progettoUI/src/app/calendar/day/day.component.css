@@ -1,39 +1,39 @@
-.day-container { user-select:none; }
-.day-header { text-align:center; padding:8px 0; font-weight:600; }
-.day-body { display:grid; grid-template-columns:50px 1fr; }
-.time-col .hour { height:40px; text-align:right; padding-right:4px; }
-.day-col .slot { height:40px; border-bottom:1px solid #eee; position:relative; }
-.fill {
-  position:absolute; top:0; left:0; right:0; bottom:0;
-  color:#fff; font-size:0.75rem; padding:2px;
+.day-header {
+  text-align: center;
+  background: var(--purple);
+  color: #fff;
+  padding: 0.75rem 0;
+  font-weight: 600;
+  text-transform: capitalize;
 }
-.fab {
-  position: fixed;
-  bottom: 1.5rem;
-  right: 1.5rem;
-  width: 4rem;
-  height: 4rem;
-  background-color: var(--purple);  /* cerchio viola */
-  color: var(--white);              /* “+” bianco */
-  border: none;                     /* nessun bordo */
-  border-radius: 50%;
-  font-size: 2rem;
+
+.day-body {
+  display: grid;
+  grid-template-columns: 50px 1fr;
+}
+.day-body .time-col .hour {
+  height: 40px;
+  text-align: right;
+  padding-right: 4px;
+  border-bottom: 1px solid #eee;
+}
+.day-col {
   display: flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+  flex-direction: column;
+}
+.slot {
+  flex: 1;
+  border-bottom: 1px solid #eee;
+  position: relative;
+}
+.fill {
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  color: #fff;
+  font-size: 0.75rem;
+  padding: 2px;
   cursor: pointer;
-  z-index: 100;
-  transition: transform 0.1s ease;
-}
-
-.fab:hover {
-  transform: scale(1.05);
-}
-
-/* Forza il cerchio viola e il + bianco */
-.fab {
-  background-color: var(--purple) !important;
-  color: var(--white) !important;
-  opacity: 1 !important;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
 }
