@@ -12,7 +12,7 @@
         <div *ngFor="let ev of eventsForDay(day)"
              class="ev-label"
              [style.background]="ev.color"
-             (click)="openDetail(ev)">
+             (click)="openDetail(ev, day)">
           {{ ev.title }}
         </div>
       </div>
@@ -26,5 +26,6 @@
                 [formData]="selectedEvent"
                 (newEvent)="saveEvent($event)"
                 (updateEvent)="saveEvent($event)"
+                (deleteEvent)="deleteSelected($event)"
                 (formClosed)="closeForm()">
 </app-event-form>

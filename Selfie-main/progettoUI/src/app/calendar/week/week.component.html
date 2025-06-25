@@ -14,10 +14,13 @@
   <ng-container *ngFor="let d of days">
     <div class="day-col">
       <div class="slot" *ngFor="let h of hours">
-        <div *ngFor="let ev of eventsForSlot(d,h)"
+        <div *ngFor="let ev of eventsForSlot(d, h); let i = index; let count = count"
              class="fill"
+             [style.width.%]="100 / count"
+             [style.left.%]="(100 / count) * i"
+             [style.right]="'auto'"
              [style.background]="ev.color"
-             (click)="openDetail(ev)">
+             (click)="openDetail(ev, d)">
           {{ ev.title }}
         </div>
       </div>
@@ -31,5 +34,6 @@
                 [formData]="selectedEvent"
                 (newEvent)="saveEvent($event)"
                 (updateEvent)="saveEvent($event)"
+                (deleteEvent)="deleteSelected($event)"
                 (formClosed)="closeForm()">
 </app-event-form>

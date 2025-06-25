@@ -5,7 +5,7 @@ registerLocaleData(localeIt);
 import { bootstrapApplication } from '@angular/platform-browser';
 import { provideRouter } from '@angular/router';
 import { LOCALE_ID } from '@angular/core';
-
+import { appConfig } from './app/app.config';
 import { AppComponent } from './app/app.component';
 import { HomeComponent } from './app/home/home.component';
 import { CalendarComponent } from './app/calendar/calendar.component';
@@ -16,7 +16,10 @@ import { LoginpageComponent } from './app/loginpage/loginpage.component';
 import { NotesComponent } from './app/notes/notes.component';
 import { NoteEditorComponent } from './app/note-editor/note-editor.component';
 
-bootstrapApplication(AppComponent, {
+bootstrapApplication(AppComponent, appConfig)
+  .catch(err => console.error(err));
+  
+  /*{
   providers: [
     provideRouter([
       { path: '', redirectTo: 'home', pathMatch: 'full' },
@@ -39,4 +42,5 @@ bootstrapApplication(AppComponent, {
     // anziché `provide(LOCALE_ID, 'it')`, usiamo questa sintassi:
     { provide: LOCALE_ID, useValue: 'it' }
   ]
-}).catch(err => console.error(err));
+}*/
+

@@ -1,39 +1,36 @@
 import { Injectable } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
 import { CalendarEvent } from '../calendar/event-form/event-form.component';
+import { lastValueFrom } from 'rxjs';
 
 @Injectable({ providedIn: 'root' })
 export class EventService {
-  private storageKey = 'calendarEvents';
+  private apiUrl = 'http://localhost:8080/evento';
 
-  private loadAll(): CalendarEvent[] {
-    const data = localStorage.getItem(this.storageKey);
-    return data ? JSON.parse(data) : [];
-  }
+  constructor(private http: HttpClient) {}
 
   getAllEvents(): Promise<CalendarEvent[]> {
-    return Promise.resolve(this.loadAll());
-  }
+  return lastValueFrom(this.http.get<any[]>(this.apiUrl))
+    .then(events => events.map(e => ({ ...e, id: e._id })));
+}
 
-  getEventById(id: string): Promise<CalendarEvent | undefined> {
-    return Promise.resolve(this.loadAll().find(e => e.id === id));
-  }
+addEvent(event: CalendarEvent): Promise<CalendarEvent> {
+  return lastValueFrom(this.http.post<any>(this.apiUrl, event))
+    .then(e => ({ ...e, id: e._id }));
+}
 
-  addEvent(event: CalendarEvent): Promise<void> {
-    const arr = this.loadAll();
-    arr.push(event);
-    localStorage.setItem(this.storageKey, JSON.stringify(arr));
-    return Promise.resolve();
-  }
 
-  updateEvent(updated: CalendarEvent): Promise<void> {
-    const arr = this.loadAll().map(e => e.id === updated.id ? updated : e);
-    localStorage.setItem(this.storageKey, JSON.stringify(arr));
-    return Promise.resolve();
+
+
+  updateEvent(event: CalendarEvent): Promise<void> {
+    return lastValueFrom(this.http.put<void>(`${this.apiUrl}/${event.id}`, event));
   }
 
   deleteEvent(id: string): Promise<void> {
-    const arr = this.loadAll().filter(e => e.id !== id);
-    localStorage.setItem(this.storageKey, JSON.stringify(arr));
-    return Promise.resolve();
+    return lastValueFrom(this.http.delete<void>(`${this.apiUrl}/${id}`));
+  }
+
+  deleteSeries(id: string): Promise<void> {
+    return lastValueFrom(this.http.delete<void>(`${this.apiUrl}/series/${id}`));
   }
 }

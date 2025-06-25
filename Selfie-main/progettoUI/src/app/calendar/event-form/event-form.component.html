@@ -69,6 +69,7 @@
       <div class="form-buttons">
         <button type="submit">{{ isEditMode ? 'Aggiorna' : 'Crea' }}</button>
         <button type="button" (click)="cancel()">Annulla</button>
+        <button *ngIf="isEditMode" type="button" (click)="delete()">Elimina</button>
       </div>
     </form>
   </div>
