@@ -6,15 +6,17 @@ export interface CalendarEvent {
   id: string;
   title: string;
   description?: string;
-  startDate: string;    // formato ISO “YYYY-MM-DD”
-  endDate:   string;    // formato ISO “YYYY-MM-DD”
+  startDate: Date;   // ora Date
+  endDate:   Date;   // ora Date
   allDay: boolean;
-  startTime?: string;   // “HH:mm”
-  endTime?:   string;   // “HH:mm”
+  startTime?: string;
+  endTime?:   string;
   reminderMinutes: number;
   recurrence: 'none' | 'daily' | 'weekly' | 'monthly' | 'yearly';
   color: string;
 }
+
+
 
 @Component({
   selector: 'app-event-form',
@@ -107,30 +109,33 @@ export class EventFormComponent implements OnChanges {
   }
 
   submit() {
-    if (this.form.invalid) return;
-    const f = this.form.value;
-    const startTime = f.allDay ? undefined : `${f.startHour}:${f.startMinute}`;
-    const endTime   = f.allDay ? undefined : `${f.endHour}:${f.endMinute}`;
-    const toSave: CalendarEvent = {
-      id: this.isEditMode && this.formData ? this.formData.id : this.generateId(),
-      title:           f.title,
-      description:     f.description,
-      startDate:       f.startDate,
-      endDate:         f.endDate,
-      allDay:          f.allDay,
-      startTime:       startTime,
-      endTime:         endTime,
-      reminderMinutes: +f.reminderMinutes,
-      recurrence:      f.recurrence,
-      color:           f.color
-    };
-    if (this.isEditMode) {
-      this.updateEvent.emit(toSave);
-    } else {
-      this.newEvent.emit(toSave);
-    }
-    this.close();
+  if (this.form.invalid) return;
+  const f = this.form.value;
+  const startTime = f.allDay ? undefined : `${f.startHour}:${f.startMinute}`;
+  const endTime   = f.allDay ? undefined : `${f.endHour}:${f.endMinute}`;
+
+  const toSave: CalendarEvent = {
+    id: this.isEditMode && this.formData ? this.formData.id : this.generateId(),
+    title:           f.title,
+    description:     f.description,
+    startDate:       new Date(f.startDate),  // 🟢 converti in Date
+    endDate:         new Date(f.endDate),    // 🟢 converti in Date
+    allDay:          f.allDay,
+    startTime:       startTime,
+    endTime:         endTime,
+    reminderMinutes: +f.reminderMinutes,
+    recurrence:      f.recurrence,
+    color:           f.color
+  };
+
+  if (this.isEditMode) {
+    this.updateEvent.emit(toSave);
+  } else {
+    this.newEvent.emit(toSave);
   }
+  this.close();
+}
+
 
   cancel() {
     this.close();

@@ -39,54 +39,90 @@ export class DayComponent implements OnInit, OnChanges {
   }
 
   eventsForHour(h: number): CalendarEvent[] {
-    const ds = this.baseDate!.toISOString().slice(0,10);
-    const hourStr = h.toString().padStart(2, '0');
-    return this.events.filter(e => {
-      if (e.startDate <= ds && e.endDate >= ds) {
-        if (e.allDay) {
-          if (e.recurrence === 'none' && e.startDate === ds) return true;
-          if (e.recurrence === 'daily' && ds >= e.startDate) return true;
-          if (e.recurrence === 'weekly') {
-            const origDow = new Date(e.startDate).getDay();
-            if (this.baseDate!.getDay() === origDow && ds >= e.startDate) return true;
-          }
-          if (e.recurrence === 'monthly') {
-            const origDay = parseInt(e.startDate.slice(8,10), 10);
-            if (this.baseDate!.getDate() === origDay && ds >= e.startDate) return true;
-          }
-          if (e.recurrence === 'yearly') {
-            const orig = new Date(e.startDate);
-            if (
-              this.baseDate!.getDate() === orig.getDate() &&
-              this.baseDate!.getMonth() === orig.getMonth() &&
-              ds >= e.startDate
-            ) return true;
-          }
-          return false;
-        }
-        if (e.startTime?.startsWith(hourStr)) {
-          if (e.recurrence === 'none' && e.startDate === ds) return true;
-          if (e.recurrence === 'daily' && ds >= e.startDate) return true;
-          if (e.recurrence === 'weekly') {
-            const origDow = new Date(e.startDate).getDay();
-            if (this.baseDate!.getDay() === origDow && ds >= e.startDate) return true;
-          }
-          if (e.recurrence === 'monthly') {
-            const origDay = parseInt(e.startDate.slice(8,10), 10);
-            if (this.baseDate!.getDate() === origDay && ds >= e.startDate) return true;
-          }
-          if (e.recurrence === 'yearly') {
-            const orig = new Date(e.startDate);
-            if (
-              this.baseDate!.getDate() === orig.getDate() &&
-              this.baseDate!.getMonth() === orig.getMonth() &&
-              ds >= e.startDate
-            ) return true;
-          }
-        }
-      }
-      return false;
-    });
+  const currentDate = this.baseDate!;
+  const slotStart = new Date(currentDate);
+  slotStart.setHours(h, 0, 0, 0);
+  const slotEnd = new Date(currentDate);
+  slotEnd.setHours(h + 1, 0, 0, 0);
+
+  const results = this.events.filter(e => {
+    const baseStartDate = new Date(e.startDate);
+    const baseEndDate = new Date(e.endDate);
+
+    // Calcola differenza in giorni dal baseStartDate
+    const diffDays = Math.floor((currentDate.getTime() - baseStartDate.getTime()) / (1000 * 60 * 60 * 24));
+
+    let eventStart = new Date(baseStartDate);
+    let eventEnd = new Date(baseEndDate);
+
+    switch (e.recurrence) {
+      case 'daily':
+        if (diffDays < 0) return false;
+        eventStart.setDate(baseStartDate.getDate() + diffDays);
+        eventEnd.setDate(baseEndDate.getDate() + diffDays);
+        break;
+      case 'weekly':
+        const weeksSinceStart = Math.floor(diffDays / 7);
+        if (weeksSinceStart < 0) return false;
+        eventStart.setDate(baseStartDate.getDate() + weeksSinceStart * 7);
+        eventEnd.setDate(baseEndDate.getDate() + weeksSinceStart * 7);
+        break;
+      case 'monthly':
+        if (currentDate < baseStartDate) return false;
+        eventStart.setMonth(currentDate.getMonth());
+        eventStart.setFullYear(currentDate.getFullYear());
+        eventEnd.setMonth(currentDate.getMonth());
+        eventEnd.setFullYear(currentDate.getFullYear());
+        break;
+      case 'yearly':
+        if (currentDate < baseStartDate) return false;
+        eventStart.setFullYear(currentDate.getFullYear());
+        eventEnd.setFullYear(currentDate.getFullYear());
+        break;
+      case 'none':
+        // no recurrence, keep dates as is
+        break;
+    }
+
+    // Applica orari se presenti
+    if (e.startTime) {
+      const [sh, sm] = e.startTime.split(':').map(Number);
+      eventStart.setHours(sh, sm, 0, 0);
+    } else {
+      eventStart.setHours(0,0,0,0);
+    }
+
+    if (e.endTime) {
+      const [eh, em] = e.endTime.split(':').map(Number);
+      eventEnd.setHours(eh, em, 0, 0);
+    } else {
+      eventEnd.setHours(23,59,59,999);
+    }
+
+    // Validità: l'evento deve intersecare lo slot
+    const valid = slotStart < eventEnd && slotEnd > eventStart;
+
+    // Debug dettagliato
+    if (valid) {
+      console.log(`🪲 [day] evento valido:
+        ID: ${e.id}
+        title: ${e.title}
+        recurrence: ${e.recurrence}
+        eventStart: ${eventStart}
+        eventEnd: ${eventEnd}
+        slot: ${h}:00`);
+    }
+
+    return valid;
+  });
+
+  return results;
+}
+
+  sameDay(d1: Date, d2: Date): boolean {
+    return d1.getFullYear() === d2.getFullYear() &&
+           d1.getMonth() === d2.getMonth() &&
+           d1.getDate() === d2.getDate();
   }
 
   openNew() {
@@ -96,113 +132,120 @@ export class DayComponent implements OnInit, OnChanges {
 
   openDetail(ev: CalendarEvent, date?: Date) {
     this.selectedEvent = ev;
-    // Memorizza la data dell'occorrenza selezionata (default = data corrente se non fornita)
     this.selectedEventDate = date ? new Date(date) : (this.baseDate ? new Date(this.baseDate) : new Date());
     this.showForm = true;
   }
 
-  deleteSelected(event?: CalendarEvent) {
-    if (event) this.selectedEvent = event;
-    if (!this.selectedEvent) return;
-    // Se l'evento è ricorrente, chiedi se eliminare singola occorrenza o tutta la serie
-    if (this.selectedEvent.recurrence !== 'none') {
-      const confirmSeries = window.confirm(
-        "Vuoi eliminare l'intera serie di eventi? Premi OK per eliminare **tutti** gli eventi della serie, Annulla per eliminare **solo questa** occorrenza."
-      );
-      if (confirmSeries) {
-        // Eliminazione serie completa
-        this.eventSvc.deleteEvent(this.selectedEvent.id)
-          .then(() => this.eventSvc.getAllEvents())
-          .then(evArr => {
-            this.events = evArr;
-            this.selectedEvent = undefined;
-            this.selectedEventDate = undefined;
-          });
-      } else {
-        // Eliminazione singola occorrenza
-        if (!this.selectedEventDate) {
-          this.selectedEventDate = this.baseDate ? new Date(this.baseDate) : new Date();
-        }
-        const occDateStr = this.selectedEventDate.toISOString().slice(0,10);
-        // Verifica che la data da eliminare rientri nel range dell'evento
-        if (occDateStr < this.selectedEvent.startDate || occDateStr > this.selectedEvent.endDate) {
-          this.selectedEvent = undefined;
-          this.selectedEventDate = undefined;
-          return;
-        }
-        const origStart = this.selectedEvent.startDate;
-        const origEnd = this.selectedEvent.endDate;
-        const rec = this.selectedEvent.recurrence;
-        // Calcola la data precedente e successiva all'occorrenza da eliminare
-        let prevDate = new Date(occDateStr);
-        let nextDate = new Date(occDateStr);
-        if (rec === 'daily') {
-          prevDate.setDate(prevDate.getDate() - 1);
-          nextDate.setDate(nextDate.getDate() + 1);
-        } else if (rec === 'weekly') {
-          prevDate.setDate(prevDate.getDate() - 7);
-          nextDate.setDate(nextDate.getDate() + 7);
-        } else if (rec === 'monthly') {
-          prevDate.setMonth(prevDate.getMonth() - 1);
-          nextDate.setMonth(nextDate.getMonth() + 1);
-        } else if (rec === 'yearly') {
-          prevDate.setFullYear(prevDate.getFullYear() - 1);
-          nextDate.setFullYear(nextDate.getFullYear() + 1);
-        }
-        const prevDateStr = prevDate.toISOString().slice(0,10);
-        const nextDateStr = nextDate.toISOString().slice(0,10);
-        if (occDateStr === origStart) {
-          // Caso 1: rimuoviamo la prima occorrenza – sposta in avanti la data d'inizio
-          this.selectedEvent.startDate = nextDateStr;
-          this.eventSvc.updateEvent(this.selectedEvent)
-            .then(() => this.eventSvc.getAllEvents())
-            .then(evArr => {
-              this.events = evArr;
-              this.selectedEvent = undefined;
-              this.selectedEventDate = undefined;
-            });
-        } else if (occDateStr === origEnd) {
-          // Caso 2: rimuoviamo l'ultima occorrenza – anticipa la data di fine
-          this.selectedEvent.endDate = prevDateStr;
-          this.eventSvc.updateEvent(this.selectedEvent)
-            .then(() => this.eventSvc.getAllEvents())
-            .then(evArr => {
-              this.events = evArr;
-              this.selectedEvent = undefined;
-              this.selectedEventDate = undefined;
-            });
-        } else {
-          // Caso 3: rimuoviamo un'occorrenza in mezzo – spezza l'evento in due serie
-          const originalEvent = { ...this.selectedEvent };
-          // Serie 1: termina il giorno prima dell'occorrenza eliminata
-          this.selectedEvent.endDate = prevDateStr;
-          // Serie 2: nuova serie che inizia il giorno dopo l'occorrenza eliminata
-          const newEvent: CalendarEvent = { ...originalEvent };
-          newEvent.id = Math.random().toString(36).substring(2, 15);
-          newEvent.startDate = nextDateStr;
-          newEvent.endDate = origEnd;
-          // Salva modifiche: aggiorna evento originale e aggiungi nuovo evento
-          this.eventSvc.updateEvent(this.selectedEvent)
-            .then(() => this.eventSvc.addEvent(newEvent))
-            .then(() => this.eventSvc.getAllEvents())
-            .then(evArr => {
-              this.events = evArr;
-              this.selectedEvent = undefined;
-              this.selectedEventDate = undefined;
-            });
-        }
-      }
-    } else {
-      // Evento non ricorrente: eliminazione semplice
-      this.eventSvc.deleteEvent(this.selectedEvent.id)
+deleteSelected(event?: CalendarEvent) {
+  if (event) this.selectedEvent = event;
+  if (!this.selectedEvent) return;
+
+  const ev = this.selectedEvent;
+
+  if (ev.recurrence !== 'none') {
+    const confirmSeries = window.confirm(
+      "Vuoi eliminare l'intera serie di eventi? Premi OK per eliminare **tutti** gli eventi della serie, Annulla per eliminare **solo questa** occorrenza."
+    );
+
+    if (confirmSeries) {
+      // Eliminazione intera serie
+      this.eventSvc.deleteEvent(ev.id)
         .then(() => this.eventSvc.getAllEvents())
         .then(evArr => {
           this.events = evArr;
           this.selectedEvent = undefined;
           this.selectedEventDate = undefined;
         });
+
+    } else {
+      // Eliminazione singola occorrenza
+      if (!this.selectedEventDate) this.selectedEventDate = new Date();
+
+      const occDate = this.selectedEventDate;
+      const start = new Date(ev.startDate);
+      const end = new Date(ev.endDate);
+
+      // Verifica che l'occorrenza sia dentro i limiti della serie
+      if (occDate < start || occDate > end) {
+        this.selectedEvent = undefined;
+        this.selectedEventDate = undefined;
+        return;
+      }
+
+      // Funzioni helper
+      const prevOccurrenceDate = (date: Date, recurrence: string): Date => {
+        const prev = new Date(date);
+        if (recurrence === 'daily') prev.setDate(prev.getDate() - 1);
+        if (recurrence === 'weekly') prev.setDate(prev.getDate() - 7);
+        if (recurrence === 'monthly') prev.setMonth(prev.getMonth() - 1);
+        if (recurrence === 'yearly') prev.setFullYear(prev.getFullYear() - 1);
+        return prev;
+      };
+
+      const nextOccurrenceDate = (date: Date, recurrence: string): Date => {
+        const next = new Date(date);
+        if (recurrence === 'daily') next.setDate(next.getDate() + 1);
+        if (recurrence === 'weekly') next.setDate(next.getDate() + 7);
+        if (recurrence === 'monthly') next.setMonth(next.getMonth() + 1);
+        if (recurrence === 'yearly') next.setFullYear(next.getFullYear() + 1);
+        return next;
+      };
+
+      // Gestione rimozione singola occorrenza
+      if (occDate.getTime() === start.getTime()) {
+        // Rimuove la prima occorrenza: sposta startDate in avanti
+        ev.startDate = nextOccurrenceDate(occDate, ev.recurrence);
+        this.eventSvc.updateEvent(ev)
+          .then(() => this.eventSvc.getAllEvents())
+          .then(evArr => {
+            this.events = evArr;
+            this.selectedEvent = undefined;
+            this.selectedEventDate = undefined;
+          });
+
+      } else if (occDate.getTime() === end.getTime()) {
+        // Rimuove l'ultima occorrenza: sposta endDate indietro
+        ev.endDate = prevOccurrenceDate(occDate, ev.recurrence);
+        this.eventSvc.updateEvent(ev)
+          .then(() => this.eventSvc.getAllEvents())
+          .then(evArr => {
+            this.events = evArr;
+            this.selectedEvent = undefined;
+            this.selectedEventDate = undefined;
+          });
+
+      } else {
+        // Rimuove occorrenza intermedia: split in due eventi
+        const newEvent: CalendarEvent = { ...ev };
+        newEvent.id = Math.random().toString(36).substring(2, 15);
+        newEvent.startDate = nextOccurrenceDate(occDate, ev.recurrence);
+        newEvent.endDate = end;
+
+        ev.endDate = prevOccurrenceDate(occDate, ev.recurrence);
+
+        this.eventSvc.updateEvent(ev)
+          .then(() => this.eventSvc.addEvent(newEvent))
+          .then(() => this.eventSvc.getAllEvents())
+          .then(evArr => {
+            this.events = evArr;
+            this.selectedEvent = undefined;
+            this.selectedEventDate = undefined;
+          });
+      }
     }
+
+  } else {
+    // Eliminazione evento non ricorrente
+    this.eventSvc.deleteEvent(ev.id)
+      .then(() => this.eventSvc.getAllEvents())
+      .then(evArr => {
+        this.events = evArr;
+        this.selectedEvent = undefined;
+        this.selectedEventDate = undefined;
+      });
   }
+}
+
 
   saveEvent(ev: CalendarEvent) {
     if (this.selectedEvent) {

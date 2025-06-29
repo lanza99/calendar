@@ -57,21 +57,25 @@ export class CalendarComponent {
   }
 
   // Per la vista settimana, mostra range “Mese G–G Mese”, es. “giu 2–8 giu”
-  getWeekLabel(): string {
-    // Trova lunedì e domenica della settimana corrente
-    const dow = (this.currentDate.getDay() + 6) % 7; // lunedì=0… domenica=6
-    const monday = new Date(this.currentDate);
-    monday.setDate(this.currentDate.getDate() - dow);
-    const sunday = new Date(monday);
-    sunday.setDate(monday.getDate() + 6);
+ getWeekLabel(): string {
+  const dow = (this.currentDate.getDay() + 6) % 7;
+  const monday = new Date(this.currentDate);
+  monday.setDate(this.currentDate.getDate() - dow);
 
-    // Estrai giorno e mese (in italiano)
-    const dayM = monday.getDate();
-    const dayS = sunday.getDate();
-    const monthName = monday.toLocaleDateString('it-IT', { month: 'short' });
+  const sunday = new Date(monday);
+  sunday.setDate(monday.getDate() + 6);
 
-    return `${monthName} ${dayM}–${dayS} ${monthName}`;
-  }
+  const monthStart = monday.toLocaleString('it-IT', { month: 'short' });
+  const monthEnd = sunday.toLocaleString('it-IT', { month: 'short' });
+
+  const dayStart = monday.getDate();
+  const dayEnd = sunday.getDate();
+
+  // Mostra sempre entrambi i mesi, anche se uguali
+  return `${monthStart} ${dayStart} - ${dayEnd} ${monthEnd}`;
+}
+
+
 
   // Per la vista mese, mostra “Mese YYYY”, es. “giugno 2025”
   getMonthLabel(): string {

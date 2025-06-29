@@ -1,38 +1,37 @@
 import { Component, Input, OnInit, OnChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { EventService }  from '../../services/event.service';
+import { EventService } from '../../services/event.service';
 import { EventFormComponent, CalendarEvent } from '../event-form/event-form.component';
+import { ConfirmationModalComponent } from '../ConfirmationModalComponent/confirmation-modal.component';
 
 @Component({
   selector: 'app-month',
   standalone: true,
-  imports: [CommonModule, EventFormComponent],
+  imports: [CommonModule, EventFormComponent, ConfirmationModalComponent],
   templateUrl: './month.component.html',
   styleUrls: ['./month.component.css']
 })
 export class MonthComponent implements OnInit, OnChanges {
   @Input() baseDate?: Date;
-
   weeks: Date[][] = [];
   events: CalendarEvent[] = [];
   selectedEvent?: CalendarEvent;
   selectedEventDate?: Date;
   showForm = false;
 
+  showConfirm = false;
+  pendingDeleteEvent?: CalendarEvent;
+
   constructor(private eventSvc: EventService) {}
 
   ngOnInit() {
-    if (!this.baseDate) {
-      this.baseDate = new Date();
-    }
+    if (!this.baseDate) this.baseDate = new Date();
     this.buildCalendar();
     this.loadEvents();
   }
 
   ngOnChanges() {
-    if (!this.baseDate) {
-      this.baseDate = new Date();
-    }
+    if (!this.baseDate) this.baseDate = new Date();
     this.buildCalendar();
     this.loadEvents();
   }
@@ -41,8 +40,7 @@ export class MonthComponent implements OnInit, OnChanges {
     const y = this.baseDate!.getFullYear();
     const m = this.baseDate!.getMonth();
     const first = new Date(y, m, 1);
-    // Giorni del mese precedente da mostrare nella prima settimana
-    let offset = (first.getDay() + 6) % 7; // converte domenica=6, lunedì=0, ...
+    const offset = (first.getDay() + 6) % 7;
     let cur = new Date(y, m, 1 - offset);
     this.weeks = [];
     for (let w = 0; w < 6; w++) {
@@ -56,38 +54,25 @@ export class MonthComponent implements OnInit, OnChanges {
   }
 
   loadEvents() {
-    this.eventSvc.getAllEvents().then(ev => this.events = ev);
+    this.eventSvc.getAllEvents()
+      .then(ev => this.events = ev);
   }
 
   eventsForDay(day: Date): CalendarEvent[] {
-    const ds = day.toISOString().slice(0,10);
+    const dayUTC = new Date(Date.UTC(day.getFullYear(), day.getMonth(), day.getDate()));
     return this.events.filter(e => {
-      // L’evento copre la data “ds” se startDate <= ds <= endDate
-      if (e.startDate <= ds && e.endDate >= ds) {
-        if (e.recurrence === 'none') {
-          return e.startDate === ds;
-        }
-        if (e.recurrence === 'daily') {
-          return ds >= e.startDate;
-        }
-        if (e.recurrence === 'weekly') {
-          const origDow = new Date(e.startDate).getDay();
-          if (day.getDay() === origDow && ds >= e.startDate) return true;
-        }
-        if (e.recurrence === 'monthly') {
-          const origDay = parseInt(e.startDate.slice(8,10), 10);
-          if (day.getDate() === origDay && ds >= e.startDate) return true;
-        }
-        if (e.recurrence === 'yearly') {
-          const orig = new Date(e.startDate);
-          if (
-            day.getDate() === orig.getDate() &&
-            day.getMonth() === orig.getMonth() &&
-            ds >= e.startDate
-          ) return true;
-        }
+      const start = new Date(Date.UTC(e.startDate.getFullYear(), e.startDate.getMonth(), e.startDate.getDate()));
+      const end = new Date(Date.UTC(e.endDate.getFullYear(), e.endDate.getMonth(), e.endDate.getDate()));
+      switch (e.recurrence) {
+        case 'none': return dayUTC >= start && dayUTC <= end;
+        case 'daily': return dayUTC >= start;
+        case 'weekly': return dayUTC.getUTCDay() === start.getUTCDay() && dayUTC >= start;
+        case 'monthly': return dayUTC.getUTCDate() === start.getUTCDate() && dayUTC >= start;
+        case 'yearly': return dayUTC.getUTCDate() === start.getUTCDate() &&
+                              dayUTC.getUTCMonth() === start.getUTCMonth() &&
+                              dayUTC >= start;
+        default: return false;
       }
-      return false;
     });
   }
 
@@ -96,110 +81,108 @@ export class MonthComponent implements OnInit, OnChanges {
     this.showForm = true;
   }
 
-  openDetail(ev: CalendarEvent, date?: Date) {
-    this.selectedEvent = ev;
-    this.selectedEventDate = date ? new Date(date) : new Date();
-    this.showForm = true;
+openDetail(ev: CalendarEvent, date?: Date) {
+  console.log('[DEBUG openDetail] clicked event:', ev);
+  console.log('[DEBUG openDetail] clicked date:', date);
+  this.selectedEvent = ev;
+  this.selectedEventDate = date ? new Date(date) : new Date();
+  this.showForm = true;
+}
+
+
+
+deleteSelected(event?: CalendarEvent) {
+  console.log('[DEBUG deleteSelected] Avviato per evento:', event);
+  if (event) this.selectedEvent = event;
+  if (!this.selectedEvent) return;
+
+  if (this.selectedEvent.recurrence !== 'none') {
+    this.showConfirm = true;
+  } else {
+    // eliminazione evento non ricorrente diretta
+    this.eventSvc.deleteEvent(this.selectedEvent.id)
+      .then(() => this.loadEvents())
+      .then(() => {
+        this.selectedEvent = undefined;
+        this.selectedEventDate = undefined;
+      });
+  }
+}
+
+onDeleteSingle() {
+  console.log('[DEBUG onDeleteSingle] Eliminazione singola occorrenza avviata');
+  console.log('[DEBUG onDeleteSingle] selectedEvent:', this.selectedEvent);
+  console.log('[DEBUG onDeleteSingle] selectedEventDate:', this.selectedEventDate);
+  if (!this.selectedEventDate || !this.selectedEvent) return;
+
+  const ev = this.selectedEvent;
+  const occDate = this.selectedEventDate;
+  const start = new Date(ev.startDate);
+  const end = new Date(ev.endDate);
+
+  // Funzioni helper
+  const prevOccurrenceDate = (date: Date, recurrence: string): Date => {
+    const prev = new Date(date);
+    if (recurrence === 'daily') prev.setDate(prev.getDate() - 1);
+    if (recurrence === 'weekly') prev.setDate(prev.getDate() - 7);
+    if (recurrence === 'monthly') prev.setMonth(prev.getMonth() - 1);
+    if (recurrence === 'yearly') prev.setFullYear(prev.getFullYear() - 1);
+    return prev;
+  };
+
+  const nextOccurrenceDate = (date: Date, recurrence: string): Date => {
+    const next = new Date(date);
+    if (recurrence === 'daily') next.setDate(next.getDate() + 1);
+    if (recurrence === 'weekly') next.setDate(next.getDate() + 7);
+    if (recurrence === 'monthly') next.setMonth(next.getMonth() + 1);
+    if (recurrence === 'yearly') next.setFullYear(next.getFullYear() + 1);
+    return next;
+  };
+
+  if (occDate.getTime() === start.getTime()) {
+    ev.startDate = nextOccurrenceDate(occDate, ev.recurrence);
+  } else if (occDate.getTime() === end.getTime()) {
+    ev.endDate = prevOccurrenceDate(occDate, ev.recurrence);
+  } else {
+    const newEvent: CalendarEvent = { ...ev, id: Math.random().toString(36).substring(2, 15) };
+    newEvent.startDate = nextOccurrenceDate(occDate, ev.recurrence);
+    newEvent.endDate = end;
+    ev.endDate = prevOccurrenceDate(occDate, ev.recurrence);
+
+    this.eventSvc.addEvent(newEvent);
   }
 
-  deleteSelected(event?: CalendarEvent) {
-    if (event) this.selectedEvent = event;
-    if (!this.selectedEvent) return;
-    if (this.selectedEvent.recurrence !== 'none') {
-      const confirmSeries = window.confirm(
-        "Vuoi eliminare l'intera serie di eventi? Premi OK per eliminare **tutti** gli eventi della serie, Annulla per eliminare **solo questa** occorrenza."
-      );
-      if (confirmSeries) {
-        this.eventSvc.deleteEvent(this.selectedEvent.id)
-          .then(() => this.eventSvc.getAllEvents())
-          .then(evArr => {
-            this.events = evArr;
-            this.selectedEvent = undefined;
-            this.selectedEventDate = undefined;
-          });
-      } else {
-        if (!this.selectedEventDate) {
-          this.selectedEventDate = new Date();
-        }
-        const occDateStr = this.selectedEventDate.toISOString().slice(0,10);
-        if (occDateStr < this.selectedEvent.startDate || occDateStr > this.selectedEvent.endDate) {
-          this.selectedEvent = undefined;
-          this.selectedEventDate = undefined;
-          return;
-        }
-        const origStart = this.selectedEvent.startDate;
-        const origEnd = this.selectedEvent.endDate;
-        const rec = this.selectedEvent.recurrence;
-        let prevDate = new Date(occDateStr);
-        let nextDate = new Date(occDateStr);
-        if (rec === 'daily') {
-          prevDate.setDate(prevDate.getDate() - 1);
-          nextDate.setDate(nextDate.getDate() + 1);
-        } else if (rec === 'weekly') {
-          prevDate.setDate(prevDate.getDate() - 7);
-          nextDate.setDate(nextDate.getDate() + 7);
-        } else if (rec === 'monthly') {
-          prevDate.setMonth(prevDate.getMonth() - 1);
-          nextDate.setMonth(nextDate.getMonth() + 1);
-        } else if (rec === 'yearly') {
-          prevDate.setFullYear(prevDate.getFullYear() - 1);
-          nextDate.setFullYear(nextDate.getFullYear() + 1);
-        }
-        const prevDateStr = prevDate.toISOString().slice(0,10);
-        const nextDateStr = nextDate.toISOString().slice(0,10);
-        if (occDateStr === origStart) {
-          this.selectedEvent.startDate = nextDateStr;
-          this.eventSvc.updateEvent(this.selectedEvent)
-            .then(() => this.eventSvc.getAllEvents())
-            .then(evArr => {
-              this.events = evArr;
-              this.selectedEvent = undefined;
-              this.selectedEventDate = undefined;
-            });
-        } else if (occDateStr === origEnd) {
-          this.selectedEvent.endDate = prevDateStr;
-          this.eventSvc.updateEvent(this.selectedEvent)
-            .then(() => this.eventSvc.getAllEvents())
-            .then(evArr => {
-              this.events = evArr;
-              this.selectedEvent = undefined;
-              this.selectedEventDate = undefined;
-            });
-        } else {
-          const originalEvent = { ...this.selectedEvent };
-          this.selectedEvent.endDate = prevDateStr;
-          const newEvent: CalendarEvent = { ...originalEvent };
-          newEvent.id = Math.random().toString(36).substring(2, 15);
-          newEvent.startDate = nextDateStr;
-          newEvent.endDate = origEnd;
-          this.eventSvc.updateEvent(this.selectedEvent)
-            .then(() => this.eventSvc.addEvent(newEvent))
-            .then(() => this.eventSvc.getAllEvents())
-            .then(evArr => {
-              this.events = evArr;
-              this.selectedEvent = undefined;
-              this.selectedEventDate = undefined;
-            });
-        }
-      }
-    } else {
-      this.eventSvc.deleteEvent(this.selectedEvent.id)
-        .then(() => this.eventSvc.getAllEvents())
-        .then(evArr => {
-          this.events = evArr;
-          this.selectedEvent = undefined;
-          this.selectedEventDate = undefined;
-        });
-    }
-  }
+  this.eventSvc.updateEvent(ev)
+    .then(() => this.loadEvents())
+    .then(() => {
+      this.selectedEvent = undefined;
+      this.selectedEventDate = undefined;
+      this.showConfirm = false;
+    });
+}
+
+onDeleteSeries() {
+  console.log('[DEBUG onDeleteSeries] Eliminazione intera serie avviata');
+  if (!this.selectedEvent) return;
+  this.eventSvc.deleteEvent(this.selectedEvent.id)
+    .then(() => this.loadEvents())
+    .then(() => {
+      this.selectedEvent = undefined;
+      this.selectedEventDate = undefined;
+      this.showConfirm = false;
+    });
+}
+
+onCancelModal() {
+  console.log('[DEBUG onCancelModal] Chiusura modale conferma');
+  this.showConfirm = false;
+}
+
 
   saveEvent(ev: CalendarEvent) {
     if (this.selectedEvent) {
       this.eventSvc.updateEvent(ev)
-        .then(() => this.eventSvc.getAllEvents())
-        .then(evArr => {
-          this.events = evArr;
-        });
+        .then(() => this.loadEvents());
     } else {
       this.eventSvc.addEvent(ev)
         .then(() => this.loadEvents());
@@ -209,6 +192,7 @@ export class MonthComponent implements OnInit, OnChanges {
 
   closeForm() {
     this.selectedEvent = undefined;
+    this.selectedEventDate = undefined;
     this.showForm = false;
   }
 }

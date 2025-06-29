@@ -10,20 +10,49 @@ export class EventService {
   constructor(private http: HttpClient) {}
 
   getAllEvents(): Promise<CalendarEvent[]> {
-  return lastValueFrom(this.http.get<any[]>(this.apiUrl))
-    .then(events => events.map(e => ({ ...e, id: e._id })));
+  return this.http.get<any[]>(this.apiUrl)
+    .toPromise()
+    .then(events => {
+      if (!events) return [];
+      return events.map(e => ({
+        id: e._id, // assegna l'id corretto
+        title: e.title,
+        description: e.description,
+        startDate: new Date(e.startDate),
+        endDate: new Date(e.endDate),
+        allDay: e.allDay,
+        startTime: e.startTime,
+        endTime: e.endTime,
+        reminderMinutes: e.reminder,
+        recurrence: e.recurrence,
+        color: e.color
+      }));
+      
+      console.log("[DEBUG events API] eventi ricevuti", events);
+
+    });
+    
 }
 
-addEvent(event: CalendarEvent): Promise<CalendarEvent> {
-  return lastValueFrom(this.http.post<any>(this.apiUrl, event))
-    .then(e => ({ ...e, id: e._id }));
-}
 
 
-
+  addEvent(event: CalendarEvent): Promise<CalendarEvent> {
+    const toSend = {
+      ...event,
+      startDate: (event.startDate instanceof Date) ? event.startDate.toISOString() : event.startDate,
+      endDate: (event.endDate instanceof Date) ? event.endDate.toISOString() : event.endDate
+    };
+    return lastValueFrom(this.http.post<any>(this.apiUrl, toSend))
+      .then(e => ({ ...e, id: e._id, startDate: new Date(e.startDate), endDate: new Date(e.endDate) }));
+  }
 
   updateEvent(event: CalendarEvent): Promise<void> {
-    return lastValueFrom(this.http.put<void>(`${this.apiUrl}/${event.id}`, event));
+    const toSend = {
+      ...event,
+      startDate: (event.startDate instanceof Date) ? event.startDate.toISOString() : event.startDate,
+      endDate: (event.endDate instanceof Date) ? event.endDate.toISOString() : event.endDate
+    };
+    return lastValueFrom(this.http.put<void>(`${this.apiUrl}/${event.id}`, toSend));
   }
 
   deleteEvent(id: string): Promise<void> {

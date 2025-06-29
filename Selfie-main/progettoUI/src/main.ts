@@ -16,10 +16,19 @@ import { LoginpageComponent } from './app/loginpage/loginpage.component';
 import { NotesComponent } from './app/notes/notes.component';
 import { NoteEditorComponent } from './app/note-editor/note-editor.component';
 
-bootstrapApplication(AppComponent, appConfig)
+bootstrapApplication(AppComponent, {
+  providers: [
+    { provide: LOCALE_ID, useValue: 'it-IT' },
+    ...appConfig.providers
+  ]
+})
+  .catch(err => console.error(err));
+
+
+/*bootstrapApplication(AppComponent, appConfig)
   .catch(err => console.error(err));
   
-  /*{
+  {
   providers: [
     provideRouter([
       { path: '', redirectTo: 'home', pathMatch: 'full' },
