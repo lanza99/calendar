@@ -140,14 +140,14 @@ onDeleteSingle() {
   };
 
   if (occDate.getTime() === start.getTime()) {
-    ev.startDate = nextOccurrenceDate(occDate, ev.recurrence);
+    ev.startDate = nextOccurrenceDate(occDate, ev.recurrence || 'none');
   } else if (occDate.getTime() === end.getTime()) {
-    ev.endDate = prevOccurrenceDate(occDate, ev.recurrence);
+    ev.endDate = prevOccurrenceDate(occDate, ev.recurrence || 'none');
   } else {
     const newEvent: CalendarEvent = { ...ev, id: Math.random().toString(36).substring(2, 15) };
-    newEvent.startDate = nextOccurrenceDate(occDate, ev.recurrence);
+    newEvent.startDate = nextOccurrenceDate(occDate, ev.recurrence || 'none');
     newEvent.endDate = end;
-    ev.endDate = prevOccurrenceDate(occDate, ev.recurrence);
+    ev.endDate = prevOccurrenceDate(occDate, ev.recurrence || 'none');
 
     this.eventSvc.addEvent(newEvent);
   }

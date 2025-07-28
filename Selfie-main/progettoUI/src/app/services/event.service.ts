@@ -1,3 +1,4 @@
+// services/event.service.ts
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { CalendarEvent } from '../calendar/event-form/event-form.component';
@@ -10,31 +11,27 @@ export class EventService {
   constructor(private http: HttpClient) {}
 
   getAllEvents(): Promise<CalendarEvent[]> {
-  return this.http.get<any[]>(this.apiUrl)
-    .toPromise()
-    .then(events => {
-      if (!events) return [];
-      return events.map(e => ({
-        id: e._id, // assegna l'id corretto
-        title: e.title,
-        description: e.description,
-        startDate: new Date(e.startDate),
-        endDate: new Date(e.endDate),
-        allDay: e.allDay,
-        startTime: e.startTime,
-        endTime: e.endTime,
-        reminderMinutes: e.reminder,
-        recurrence: e.recurrence,
-        color: e.color
-      }));
-      
-      console.log("[DEBUG events API] eventi ricevuti", events);
-
-    });
-    
-}
-
-
+    return this.http.get<any[]>(this.apiUrl)
+      .toPromise()
+      .then(events => {
+        if (!events) return [];
+        return events.map(e => ({
+          id: e._id,
+          title: e.title,
+          description: e.description,
+          startDate: new Date(e.startDate),
+          endDate: new Date(e.endDate),
+          allDay: e.allDay,
+          startTime: e.startTime,
+          endTime: e.endTime,
+          reminderMinutes: e.reminderMinutes,
+          recurrence: e.recurrence,
+          color: e.color,
+          assegnati: e.assegnati || [],
+          partecipazioni: e.partecipazioni || []
+        }));
+      });
+  }
 
   addEvent(event: CalendarEvent): Promise<CalendarEvent> {
     const toSend = {
@@ -61,5 +58,12 @@ export class EventService {
 
   deleteSeries(id: string): Promise<void> {
     return lastValueFrom(this.http.delete<void>(`${this.apiUrl}/series/${id}`));
+  }
+
+  // ✅ Nuovo metodo per accettare / rifiutare / rimandare un invito
+  rispondiAInvito(eventId: string, utente: string, stato: 'accettato' | 'rifiutato' | 'in_attesa'): Promise<void> {
+    return lastValueFrom(
+      this.http.patch<void>(`${this.apiUrl}/${eventId}/rispondi`, { utente, stato })
+    );
   }
 }

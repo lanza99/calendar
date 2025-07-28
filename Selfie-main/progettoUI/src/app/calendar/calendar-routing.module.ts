@@ -5,6 +5,7 @@ import { WeekComponent } from './week/week.component';
 import { DayComponent } from './day/day.component';
 import { EventEditorComponent } from './event-editor/event-editor.component';
 
+
 const routes: Routes = [
   {
     path: 'calendar',

@@ -4,7 +4,6 @@
 <div class="calendar-header">
   <button class="nav-btn" (click)="prev()">&#8249;</button>
 
-  <!-- Mostra etichetta diversa in base alla vista -->
   <span class="current-label" *ngIf="view === 'day'">
     {{ getCurrentLabel() }}
   </span>
@@ -20,26 +19,131 @@
 
 <!-- NAVBAR PER SELEZIONE VISTA -->
 <div class="view-selector">
-  <button class="tab"
-          [class.active]="view === 'day'"
-          (click)="setView('day')">
-    Giorno
-  </button>
-  <button class="tab"
-          [class.active]="view === 'week'"
-          (click)="setView('week')">
-    Settimana
-  </button>
-  <button class="tab"
-          [class.active]="view === 'month'"
-          (click)="setView('month')">
-    Mese
-  </button>
+  <button class="tab" [class.active]="view === 'day'" (click)="setView('day')">Giorno</button>
+  <button class="tab" [class.active]="view === 'week'" (click)="setView('week')">Settimana</button>
+  <button class="tab" [class.active]="view === 'month'" (click)="setView('month')">Mese</button>
 </div>
 
-<!-- VISTE CORRISPONDENTI -->
+<!-- VISTE -->
 <div class="views-container">
-  <app-day   *ngIf="view==='day'"   [baseDate]="currentDate"></app-day>
-  <app-week  *ngIf="view==='week'"  [baseDate]="currentDate"></app-week>
-  <app-month *ngIf="view==='month'" [baseDate]="currentDate"></app-month>
+  <app-day *ngIf="view === 'day'" [baseDate]="currentDate"></app-day>
+  <app-week *ngIf="view === 'week'" [baseDate]="currentDate"></app-week>
+  <app-month *ngIf="view === 'month'" [baseDate]="currentDate"></app-month>
 </div>
+
+<!-- TOGGLE ATTIVITÀ E INDISPONIBILITÀ -->
+<div class="floating-controls">
+  <button class="fab-button" (click)="toggleSidebar()">📋 Attività</button>
+  <button class="fab-button" (click)="openUnavailabilityForm()">➕ Indisponibilità</button>
+  
+</div>
+
+<!-- SIDEBAR ATTIVITÀ -->
+<div class="activity-sidebar" [class.open]="showSidebar">
+  <div class="activity-sidebar-header">
+    <h3>Attività</h3>
+    <button class="close-btn" (click)="toggleSidebar()">×</button>
+  </div>
+
+  <!-- ORARI NON DISPONIBILI -->
+  <section *ngIf="unavailability.length > 0">
+    <h4>Orari non disponibili</h4>
+    <ul>
+      <li *ngFor="let i of unavailability">
+        <strong>{{ i.note || 'Indisponibilità' }}</strong><br />
+        <small>{{ i.startDate | date:'short' }} → {{ i.endDate | date:'short' }}</small><br />
+        <em>Ripetizione: {{ i.recurrence }}</em><br />
+        <button (click)="modificaUnavailability(i)">✏️ Modifica</button>
+        <button (click)="i._id && eliminaUnavailability(i._id)">🗑️ Elimina</button>
+      </li>
+    </ul>
+  </section>
+
+  <!-- INVITI EVENTI -->
+  <section *ngIf="inviti.length > 0">
+    <h4>Eventi a cui sei stato invitato</h4>
+    <ul>
+      <li *ngFor="let ev of inviti">
+        <div>
+          <strong>{{ ev.title }}</strong><br />
+          <small>Orario: {{ ev.startTime }} - {{ ev.endTime }}</small><br />
+          <small>Creato da: {{ ev.creatore }}</small>
+        </div>
+        <div class="attivita-buttons">
+          <button (click)="accettaInvito(ev.id)">Accetta</button>
+          <button (click)="rifiutaInvito(ev.id)">Rifiuta</button>
+        </div>
+      </li>
+    </ul>
+  </section>
+
+  <!-- ATTIVITÀ IN RITARDO -->
+  <section *ngIf="attivitainRitardo.length > 0">
+    <h4>In Ritardo</h4>
+    <ul>
+      <li *ngFor="let att of attivitainRitardo">
+        <div>
+          <strong>{{ att.titolo }}</strong><br />
+          <small>Scadenza: {{ att.dataScadenza | date: 'shortDate' }}</small>
+        </div>
+        <div class="attivita-buttons">
+          <button (click)="modificaAttivita(att)">Modifica</button>
+          <button (click)="eliminaAttivita(att._id)">Elimina</button>
+          <button (click)="completaAttivita(att._id)">Completa</button>
+        </div>
+      </li>
+    </ul>
+  </section>
+
+  <!-- ATTIVITÀ IN CORSO -->
+  <section *ngIf="attivitaInCorso.length > 0">
+    <h4>In Corso</h4>
+    <ul>
+      <li *ngFor="let att of attivitaInCorso">
+        <div>
+          <strong>{{ att.titolo }}</strong><br />
+          <small>Scadenza: {{ att.dataScadenza | date: 'shortDate' }}</small>
+        </div>
+        <div class="attivita-buttons">
+          <button (click)="modificaAttivita(att)">Modifica</button>
+          <button (click)="eliminaAttivita(att._id)">Elimina</button>
+          <button (click)="completaAttivita(att._id)">Completa</button>
+        </div>
+      </li>
+    </ul>
+  </section>
+
+  <!-- ATTIVITÀ COMPLETATE -->
+  <section *ngIf="attivitaCompletate.length > 0">
+    <h4>Completate</h4>
+    <ul>
+      <li *ngFor="let att of attivitaCompletate">
+        <div>
+          <strong>{{ att.titolo }}</strong><br />
+          <small>Completata il: {{ att.updatedAt | date: 'short' }}</small>
+        </div>
+        <div class="attivita-buttons">
+          <button (click)="modificaAttivita(att)">Modifica</button>
+          <button (click)="eliminaAttivita(att._id)">Elimina</button>
+        </div>
+      </li>
+    </ul>
+  </section>
+
+  <p *ngIf="tutteAttivita.length === 0">Nessuna attività disponibile.</p>
+</div>
+
+<!-- MODALE EVENT-FORM PER ATTIVITÀ -->
+<app-event-form
+  *ngIf="showEventForm"
+  [formData]="selectedAttivita"
+  (formClosed)="onFormClosed()">
+</app-event-form>
+
+<!-- MODALE UNAVAILABILITY-FORM SEPARATO -->
+<app-unavailability-form
+  *ngIf="showUnavailabilityForm"
+  (submitted)="aggiungiUnavailability($event)"
+  (cancelled)="closeUnavailabilityForm()"
+  #unavailabilityForm>
+</app-unavailability-form>

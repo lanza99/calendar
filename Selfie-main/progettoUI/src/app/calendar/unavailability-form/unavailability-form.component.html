@@ -1,0 +1,30 @@
+<!-- Sfondo scuro semitrasparente -->
+<div class="modal-overlay" *ngIf="showForm"></div>
+
+<!-- Contenitore modale -->
+<div class="modal-unavailability" *ngIf="showForm">
+  <h3>Aggiungi indisponibilità</h3>
+
+  <label>Inizio:</label>
+  <input type="date" [(ngModel)]="startDate" />
+  <input type="time" [(ngModel)]="startTime" />
+
+  <label>Fine:</label>
+  <input type="date" [(ngModel)]="endDate" />
+  <input type="time" [(ngModel)]="endTime" />
+
+  <label>Ripetizione:</label>
+  <select [(ngModel)]="recurrence">
+    <option value="none">Nessuna</option>
+    <option value="daily">Giornaliera</option>
+    <option value="weekly">Settimanale</option>
+  </select>
+
+  <label>Note:</label>
+  <textarea [(ngModel)]="note" rows="2"></textarea>
+
+  <div class="form-buttons">
+    <button (click)="submit()">Salva</button>
+    <button (click)="reset()">Annulla</button>
+  </div>
+</div>

@@ -1,67 +1,83 @@
 <div class="form-backdrop">
   <div class="form-modal">
-    <h2 *ngIf="!isEditMode">Crea Nuovo Evento</h2>
+    <div class="form-toggle">
+      <span [class.active]="!isActivityMode" (click)="switchToEvento()">✏️ Evento</span>
+      <span [class.active]="isActivityMode" (click)="switchToAttivita()">📌 Attività</span>
+    </div>
+
+    <h2 *ngIf="!isEditMode">{{ isActivityMode ? 'Crea Attività' : 'Crea Evento' }}</h2>
     <h2 *ngIf="isEditMode">Modifica Evento</h2>
 
     <form [formGroup]="form" (ngSubmit)="submit()">
+
       <label for="title">Titolo</label>
       <input id="title" formControlName="title" type="text" />
 
       <label for="description">Descrizione</label>
       <textarea id="description" formControlName="description" rows="2"></textarea>
 
+      <div *ngIf="!isActivityMode">
+        <label for="luogo">Luogo</label>
+        <input id="luogo" formControlName="luogo" type="text" />
+      </div>
+
       <div class="dates">
-        <div>
+        <div *ngIf="!isActivityMode">
           <label for="startDate">Data inizio</label>
           <input id="startDate" formControlName="startDate" type="date" />
         </div>
         <div>
-          <label for="endDate">Data fine</label>
+          <label for="endDate">Data fine{{ isActivityMode ? ' (Scadenza)' : '' }}</label>
           <input id="endDate" formControlName="endDate" type="date" />
         </div>
       </div>
 
-      <div class="all-day-row">
+      <div *ngIf="!isActivityMode">
         <label class="big-switch">
           <input type="checkbox" formControlName="allDay" />
           Tutto il giorno
         </label>
+
+        <div class="times" *ngIf="!form.get('allDay')?.value">
+          <div class="time-pair">
+            <label for="startHour">Ora inizio</label>
+            <select id="startHour" formControlName="startHour">
+              <option *ngFor="let h of hours" [value]="h">{{ h }}</option>
+            </select>
+            <span>:</span>
+            <select id="startMinute" formControlName="startMinute">
+              <option *ngFor="let m of minutes" [value]="m">{{ m }}</option>
+            </select>
+          </div>
+          <div class="time-pair">
+            <label for="endHour">Ora fine</label>
+            <select id="endHour" formControlName="endHour">
+              <option *ngFor="let h of hours" [value]="h">{{ h }}</option>
+            </select>
+            <span>:</span>
+            <select id="endMinute" formControlName="endMinute">
+              <option *ngFor="let m of minutes" [value]="m">{{ m }}</option>
+            </select>
+          </div>
+        </div>
+
+        <label for="reminder">Ricorda (minuti)</label>
+        <input id="reminder" formControlName="reminderMinutes" type="number" min="0" />
+
+        <label for="recurrence">Ripetizione</label>
+        <select id="recurrence" formControlName="recurrence">
+          <option value="none">Nessuna</option>
+          <option value="daily">Giornaliera</option>
+          <option value="weekly">Settimanale</option>
+          <option value="monthly">Mensile</option>
+          <option value="yearly">Annuale</option>
+        </select>
       </div>
 
-      <div class="times" *ngIf="!form.get('allDay')?.value">
-        <div class="time-pair">
-          <label for="startHour">Ora inizio</label>
-          <select id="startHour" formControlName="startHour">
-            <option *ngFor="let h of hours" [value]="h">{{ h }}</option>
-          </select>
-          <span>:</span>
-          <select id="startMinute" formControlName="startMinute">
-            <option *ngFor="let m of minutes" [value]="m">{{ m }}</option>
-          </select>
-        </div>
-        <div class="time-pair">
-          <label for="endHour">Ora fine</label>
-          <select id="endHour" formControlName="endHour">
-            <option *ngFor="let h of hours" [value]="h">{{ h }}</option>
-          </select>
-          <span>:</span>
-          <select id="endMinute" formControlName="endMinute">
-            <option *ngFor="let m of minutes" [value]="m">{{ m }}</option>
-          </select>
-        </div>
+      <div *ngIf="true">
+        <label for="assegnati">Assegna a (virgole)</label>
+        <input id="assegnati" formControlName="assegnati" placeholder="es: utente1, utente2" />
       </div>
-
-      <label for="reminder">Ricorda (minuti)</label>
-      <input id="reminder" formControlName="reminderMinutes" type="number" min="0" />
-
-      <label for="recurrence">Ripetizione</label>
-      <select id="recurrence" formControlName="recurrence">
-        <option value="none">Nessuna</option>
-        <option value="daily">Giornaliera</option>
-        <option value="weekly">Settimanale</option>
-        <option value="monthly">Mensile</option>
-        <option value="yearly">Annuale</option>
-      </select>
 
       <label for="color">Colore</label>
       <input id="color" formControlName="color" type="color" />

@@ -194,7 +194,7 @@ deleteSelected(event?: CalendarEvent) {
       // Gestione rimozione singola occorrenza
       if (occDate.getTime() === start.getTime()) {
         // Rimuove la prima occorrenza: sposta startDate in avanti
-        ev.startDate = nextOccurrenceDate(occDate, ev.recurrence);
+        ev.startDate = nextOccurrenceDate(occDate, ev.recurrence || 'none');
         this.eventSvc.updateEvent(ev)
           .then(() => this.eventSvc.getAllEvents())
           .then(evArr => {
@@ -205,7 +205,7 @@ deleteSelected(event?: CalendarEvent) {
 
       } else if (occDate.getTime() === end.getTime()) {
         // Rimuove l'ultima occorrenza: sposta endDate indietro
-        ev.endDate = prevOccurrenceDate(occDate, ev.recurrence);
+        ev.endDate = prevOccurrenceDate(occDate, ev.recurrence || 'none');
         this.eventSvc.updateEvent(ev)
           .then(() => this.eventSvc.getAllEvents())
           .then(evArr => {
@@ -218,10 +218,10 @@ deleteSelected(event?: CalendarEvent) {
         // Rimuove occorrenza intermedia: split in due eventi
         const newEvent: CalendarEvent = { ...ev };
         newEvent.id = Math.random().toString(36).substring(2, 15);
-        newEvent.startDate = nextOccurrenceDate(occDate, ev.recurrence);
+        newEvent.startDate = nextOccurrenceDate(occDate, ev.recurrence || 'none');
         newEvent.endDate = end;
 
-        ev.endDate = prevOccurrenceDate(occDate, ev.recurrence);
+        ev.endDate = prevOccurrenceDate(occDate, ev.recurrence || 'none');
 
         this.eventSvc.updateEvent(ev)
           .then(() => this.eventSvc.addEvent(newEvent))

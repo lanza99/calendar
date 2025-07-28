@@ -1,0 +1,74 @@
+/* Contenitore popup */
+.modal-unavailability {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: white;
+  border-radius: 8px;
+  padding: 1.5rem;
+  width: 90%;
+  max-width: 400px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+  z-index: 1000;
+}
+
+/* Sfondo sfumato per il titolo */
+.modal-unavailability h3 {
+  margin-top: 0;
+  font-size: 1.5rem;
+  color: #6f42c1;
+  text-align: center;
+  margin-bottom: 1rem;
+}
+
+/* Input e select uniformati */
+.modal-unavailability input,
+.modal-unavailability select,
+.modal-unavailability textarea {
+  width: 100%;
+  padding: 0.5rem;
+  margin-bottom: 1rem;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 1rem;
+  box-sizing: border-box;
+}
+
+/* Bottoni */
+.modal-unavailability button {
+  padding: 0.5rem 1rem;
+  margin-right: 0.5rem;
+  border: none;
+  border-radius: 6px;
+  font-size: 1rem;
+  cursor: pointer;
+}
+
+/* Stile Salva */
+.modal-unavailability button:first-of-type {
+  background-color: #6f42c1;
+  color: white;
+}
+
+/* Stile Annulla */
+.modal-unavailability button:last-of-type {
+  background-color: #e0e0e0;
+}
+
+/* Sfondo semitrasparente dietro la modale */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.4);
+  z-index: 999;
+}
+
+.form-buttons {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+}
