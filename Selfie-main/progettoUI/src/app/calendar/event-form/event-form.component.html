@@ -82,10 +82,14 @@
       <label for="color">Colore</label>
       <input id="color" formControlName="color" type="color" />
 
+
       <div class="form-buttons">
         <button type="submit">{{ isEditMode ? 'Aggiorna' : 'Crea' }}</button>
         <button type="button" (click)="cancel()">Annulla</button>
         <button *ngIf="isEditMode" type="button" (click)="delete()">Elimina</button>
+        <button *ngIf="isEditMode && !isActivityMode" type="button" (click)="esportaEvento()">📅 Esporta</button>
+        <input type="file" accept=".ics" (change)="onICSFileSelected($event)" style="display: none" #fileInput />
+        <button type="button" (click)="fileInput.click()">Importa</button>
       </div>
     </form>
   </div>

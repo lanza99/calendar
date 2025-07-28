@@ -9,7 +9,10 @@
     "noImplicitReturns": true,
     "noFallthroughCasesInSwitch": true,
     "skipLibCheck": true,
-    "esModuleInterop": true,
+
+    "esModuleInterop": true,                      // ✅ Import compatibili con CommonJS
+    "allowSyntheticDefaultImports": true,         // ✅ Consente `import x = require(...)`
+
     "sourceMap": true,
     "declaration": false,
     "experimentalDecorators": true,

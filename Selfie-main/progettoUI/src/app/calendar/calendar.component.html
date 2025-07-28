@@ -32,10 +32,9 @@
 </div>
 
 <!-- TOGGLE ATTIVITÀ E INDISPONIBILITÀ -->
-<div class="floating-controls">
+<div class="floating-controls" *ngIf="!showEventForm">
   <button class="fab-button" (click)="toggleSidebar()">📋 Attività</button>
   <button class="fab-button" (click)="openUnavailabilityForm()">➕ Indisponibilità</button>
-  
 </div>
 
 <!-- SIDEBAR ATTIVITÀ -->
@@ -96,22 +95,24 @@
   </section>
 
   <!-- ATTIVITÀ IN CORSO -->
-  <section *ngIf="attivitaInCorso.length > 0">
-    <h4>In Corso</h4>
-    <ul>
-      <li *ngFor="let att of attivitaInCorso">
-        <div>
-          <strong>{{ att.titolo }}</strong><br />
-          <small>Scadenza: {{ att.dataScadenza | date: 'shortDate' }}</small>
-        </div>
-        <div class="attivita-buttons">
-          <button (click)="modificaAttivita(att)">Modifica</button>
-          <button (click)="eliminaAttivita(att._id)">Elimina</button>
-          <button (click)="completaAttivita(att._id)">Completa</button>
-        </div>
-      </li>
-    </ul>
-  </section>
+ <section *ngIf="attivitaInCorso.length > 0">
+  <h4>In Corso</h4>
+  <ul>
+    <li *ngFor="let att of attivitaInCorso">
+      <div>
+        <strong>{{ att.titolo }}</strong><br />
+        <small>Scadenza: {{ att.dataScadenza | date: 'shortDate' }}</small>
+      </div>
+      <div class="attivita-buttons">
+        <button (click)="modificaAttivita(att)">Modifica</button>
+        <button (click)="eliminaAttivita(att._id)">Elimina</button>
+        <button (click)="completaAttivita(att._id)">Completa</button>
+        <button (click)="esportaEventoComeICS(att)">📅 Esporta</button>
+      </div>
+    </li>
+  </ul>
+</section>
+
 
   <!-- ATTIVITÀ COMPLETATE -->
   <section *ngIf="attivitaCompletate.length > 0">

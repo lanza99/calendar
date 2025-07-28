@@ -2,9 +2,10 @@
 {
   "extends": "./tsconfig.json",
   "compilerOptions": {
-    "outDir": "./out-tsc/app",
-    "types": []
-  },
+  "outDir": "./out-tsc/app",
+  "types": [],
+  "typeRoots": ["./node_modules/@types", "./src/custom-typings"]
+},
   "files": [
     "src/main.ts"
   ],

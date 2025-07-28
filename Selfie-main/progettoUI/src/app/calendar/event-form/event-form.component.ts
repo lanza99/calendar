@@ -2,6 +2,8 @@ import { Component, Input, Output, EventEmitter, OnChanges } from '@angular/core
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
+import { generaICS } from '../../services/event-export.service';
+import { parseICS } from 'ics-parser';
 
 export interface CalendarEvent {
   id: string;
@@ -18,6 +20,15 @@ export interface CalendarEvent {
   color: string;
   assegnati?: string[];
   partecipazioni?: { utente: string; stato: 'accettato' | 'rifiutato' | 'in_attesa' }[];
+}
+
+// ✅ Interfaccia per tipizzare il contenuto di un evento ICS
+interface IcsEvent {
+  summary: string;
+  description?: string;
+  location?: string;
+  start: string | Date;
+  end: string | Date;
 }
 
 @Component({
@@ -43,69 +54,61 @@ export class EventFormComponent implements OnChanges {
 
   constructor(private fb: FormBuilder, private http: HttpClient) {
     this.form = this.fb.group({
-      title:           ['', Validators.required],
-      description:     [''],
-      luogo:           [''],
-      startDate:       [this.today(), Validators.required],
-      endDate:         [this.today(), Validators.required],
-      allDay:          [false],
-      startHour:       ['00'],
-      startMinute:     ['00'],
-      endHour:         ['00'],
-      endMinute:       ['00'],
+      title: ['', Validators.required],
+      description: [''],
+      luogo: [''],
+      startDate: [this.today(), Validators.required],
+      endDate: [this.today(), Validators.required],
+      allDay: [false],
+      startHour: ['00'],
+      startMinute: ['00'],
+      endHour: ['00'],
+      endMinute: ['00'],
       reminderMinutes: [0, [Validators.min(0)]],
-      recurrence:      ['none', Validators.required],
-      color:           ['#6f42c1', Validators.required],
-      assegnati:       ['']
+      recurrence: ['none', Validators.required],
+      color: ['#6f42c1', Validators.required],
+      assegnati: ['']
     });
 
     this.form.get('allDay')?.valueChanges.subscribe(val => {
       ['startHour', 'startMinute', 'endHour', 'endMinute'].forEach(control => {
-        if (val) this.form.get(control)?.disable();
-        else this.form.get(control)?.enable();
+        val ? this.form.get(control)?.disable() : this.form.get(control)?.enable();
       });
     });
   }
 
- ngOnChanges() {
-  if (this.formData) {
-    this.isEditMode = true;
+  ngOnChanges() {
+    if (this.formData) {
+      this.isEditMode = true;
+      this.isActivityMode = !this.formData.startTime && !this.formData.endTime;
 
-    // Rileva se è un'attività (assenza di startTime come discriminante)
-    this.isActivityMode = !this.formData.startTime && !this.formData.endTime;
+      const [sh, sm] = this.formData.startTime?.split(':') || ['00', '00'];
+      const [eh, em] = this.formData.endTime?.split(':') || ['00', '00'];
 
-    const [sh, sm] = this.formData.startTime?.split(':') || ['00', '00'];
-    const [eh, em] = this.formData.endTime?.split(':') || ['00', '00'];
+      this.form.patchValue({
+        title: this.formData.title,
+        description: this.formData.description || '',
+        luogo: this.formData.luogo || '',
+        startDate: this.formData.startDate,
+        endDate: this.formData.endDate,
+        allDay: this.formData.allDay,
+        startHour: sh,
+        startMinute: sm,
+        endHour: eh,
+        endMinute: em,
+        reminderMinutes: this.formData.reminderMinutes,
+        recurrence: this.formData.recurrence,
+        color: this.formData.color,
+        assegnati: this.formData.assegnati?.join(', ') || ''
+      });
 
-    this.form.patchValue({
-      title: this.formData.title,
-      description: this.formData.description || '',
-      luogo: this.formData.luogo || '',
-      startDate: this.formData.startDate,
-      endDate: this.formData.endDate,
-      allDay: this.formData.allDay,
-      startHour: sh,
-      startMinute: sm,
-      endHour: eh,
-      endMinute: em,
-      reminderMinutes: this.formData.reminderMinutes,
-      recurrence: this.formData.recurrence,
-      color: this.formData.color,
-      assegnati: (this.formData as any).assegnati || ''
-    });
-
-    // Disabilita i campi orari se "tutto il giorno"
-    if (this.form.get('allDay')?.value) {
-      this.form.get('startHour')?.disable();
-      this.form.get('startMinute')?.disable();
-      this.form.get('endHour')?.disable();
-      this.form.get('endMinute')?.disable();
+      if (this.form.get('allDay')?.value) {
+        ['startHour', 'startMinute', 'endHour', 'endMinute'].forEach(c => this.form.get(c)?.disable());
+      }
+    } else {
+      this.resetForm();
     }
-  } else {
-    this.resetForm();
   }
-}
-
 
   switchToEvento() {
     this.isActivityMode = false;
@@ -134,7 +137,7 @@ export class EventFormComponent implements OnChanges {
     }
 
     const startTime = f.allDay ? undefined : `${f.startHour}:${f.startMinute}`;
-    const endTime   = f.allDay ? undefined : `${f.endHour}:${f.endMinute}`;
+    const endTime = f.allDay ? undefined : `${f.endHour}:${f.endMinute}`;
 
     const toSave: CalendarEvent = {
       id: this.isEditMode && this.formData ? this.formData.id : this.generateId(),
@@ -144,19 +147,15 @@ export class EventFormComponent implements OnChanges {
       startDate: new Date(f.startDate),
       endDate: new Date(f.endDate),
       allDay: f.allDay,
-      startTime: startTime,
-      endTime: endTime,
+      startTime,
+      endTime,
       reminderMinutes: +f.reminderMinutes,
       recurrence: f.recurrence,
       color: f.color,
       assegnati: f.assegnati ? f.assegnati.split(',').map((x: string) => x.trim()) : []
     };
 
-    if (this.isEditMode) {
-      this.updateEvent.emit(toSave);
-    } else {
-      this.newEvent.emit(toSave);
-    }
+    this.isEditMode ? this.updateEvent.emit(toSave) : this.newEvent.emit(toSave);
     this.close();
   }
 
@@ -168,6 +167,17 @@ export class EventFormComponent implements OnChanges {
     if (!this.formData) return;
     this.deleteEvent.emit(this.formData);
     this.close();
+  }
+
+  esportaEvento() {
+    if (!this.formData) return;
+    generaICS({
+      title: this.formData.title,
+      description: this.formData.description,
+      location: this.formData.luogo,
+      startDate: new Date(this.formData.startDate),
+      endDate: new Date(this.formData.endDate)
+    });
   }
 
   private close() {
@@ -194,7 +204,6 @@ export class EventFormComponent implements OnChanges {
       color: '#6f42c1',
       assegnati: ''
     });
-
     ['startHour', 'startMinute', 'endHour', 'endMinute'].forEach(c => this.form.get(c)?.enable());
   }
 
@@ -204,5 +213,44 @@ export class EventFormComponent implements OnChanges {
 
   private generateId() {
     return Math.random().toString(36).substring(2, 15);
+  }
+
+  onICSFileSelected(event: Event) {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      try {
+        const content = reader.result as string;
+        const parsed = parseICS(content);
+        const firstEvent = Object.values(parsed)[0] as IcsEvent;
+
+        if (!firstEvent) throw new Error('Nessun evento trovato.');
+
+        const start = new Date(firstEvent.start);
+        const end = new Date(firstEvent.end);
+
+        this.form.patchValue({
+          title: firstEvent.summary || '',
+          description: firstEvent.description || '',
+          luogo: firstEvent.location || '',
+          startDate: start.toISOString().slice(0, 10),
+          endDate: end.toISOString().slice(0, 10),
+          allDay: false,
+          startHour: start.getHours().toString().padStart(2, '0'),
+          startMinute: start.getMinutes().toString().padStart(2, '0'),
+          endHour: end.getHours().toString().padStart(2, '0'),
+          endMinute: end.getMinutes().toString().padStart(2, '0'),
+        });
+
+        alert('Evento importato con successo!');
+      } catch (err) {
+        console.error('Errore durante l\'importazione:', err);
+        alert('Errore durante la lettura del file ICS.');
+      }
+    };
+    reader.readAsText(file);
   }
 }

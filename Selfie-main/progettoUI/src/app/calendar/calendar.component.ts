@@ -9,6 +9,8 @@ import { EventFormComponent } from './event-form/event-form.component';
 import { EventService } from '../services/event.service';
 import { UnavailabilityService, Unavailability } from '../services/unavailability.service';
 import { UnavailabilityFormComponent } from './unavailability-form/unavailability-form.component';
+import { generaICS } from '../services/event-export.service';
+
 
 @Component({
   selector: 'app-calendar',
@@ -45,7 +47,7 @@ export class CalendarComponent implements OnInit {
   currentUser: string = 'utente1';
 
   selectedAttivita?: any;
-  showEventForm = false;
+  showEventForm: boolean = false;
 
   notifiedEvents = new Set<string>();
   notificheAttive = new Set<string>();
@@ -310,4 +312,15 @@ export class CalendarComponent implements OnInit {
     this.fetchAttivita();
     this.fetchEventi();
   }
+
+  esportaEventoComeICS(evento: any) {
+  generaICS({
+    title: evento.titolo || evento.title || 'Evento',
+    description: evento.descrizione || evento.description || '',
+    location: evento.luogo || evento.location || '',
+    startDate: new Date(evento.startDate || evento.dataScadenza),
+    endDate: new Date(evento.endDate || evento.dataScadenza),
+  });
+}
+
 }
