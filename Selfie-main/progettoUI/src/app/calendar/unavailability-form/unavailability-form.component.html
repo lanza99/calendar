@@ -1,30 +1,55 @@
-<!-- Sfondo scuro semitrasparente -->
-<div class="modal-overlay" *ngIf="showForm"></div>
+<div class="form-overlay" *ngIf="showForm">
+  <div class="form-container">
+    <div class="form-header">
+      <div class="form-toggle-buttons">
+        <button (click)="mode = 'add'" [class.active]="mode === 'add'">➕ Aggiungi</button>
+        <button (click)="mode = 'list'" [class.active]="mode === 'list'">📝 Modifica</button>
+      </div>
+      <h3>{{ mode === 'add' ? 'Aggiungi indisponibilità' : 'Le tue indisponibilità' }}</h3>
+    </div>
 
-<!-- Contenitore modale -->
-<div class="modal-unavailability" *ngIf="showForm">
-  <h3>Aggiungi indisponibilità</h3>
+    <!-- FORM PER CREARE/MODIFICARE -->
+    <form *ngIf="mode === 'add'" (ngSubmit)="submit()">
+      <label>Inizio:</label>
+      <input type="date" [(ngModel)]="startDate" name="startDate" required />
+      <input type="time" [(ngModel)]="startTime" name="startTime" />
 
-  <label>Inizio:</label>
-  <input type="date" [(ngModel)]="startDate" />
-  <input type="time" [(ngModel)]="startTime" />
+      <label>Fine:</label>
+      <input type="date" [(ngModel)]="endDate" name="endDate" required />
+      <input type="time" [(ngModel)]="endTime" name="endTime" />
 
-  <label>Fine:</label>
-  <input type="date" [(ngModel)]="endDate" />
-  <input type="time" [(ngModel)]="endTime" />
+      <label>Ripetizione:</label>
+      <select [(ngModel)]="recurrence" name="recurrence">
+        <option value="none">Nessuna</option>
+        <option value="daily">Giornaliera</option>
+        <option value="weekly">Settimanale</option>
+      </select>
 
-  <label>Ripetizione:</label>
-  <select [(ngModel)]="recurrence">
-    <option value="none">Nessuna</option>
-    <option value="daily">Giornaliera</option>
-    <option value="weekly">Settimanale</option>
-  </select>
+      <label>Note:</label>
+      <textarea [(ngModel)]="note" name="note" rows="2"></textarea>
 
-  <label>Note:</label>
-  <textarea [(ngModel)]="note" rows="2"></textarea>
+      <div class="form-buttons">
+        <button type="submit">Salva</button>
+        <button type="button" (click)="reset()">Annulla</button>
+      </div>
+    </form>
 
-  <div class="form-buttons">
-    <button (click)="submit()">Salva</button>
-    <button (click)="reset()">Annulla</button>
+    <!-- LISTA INDISPONIBILITÀ -->
+    <div *ngIf="mode === 'list'" class="unavailability-list">
+      <div *ngIf="allUnavailability.length === 0">Nessuna indisponibilità presente.</div>
+      <ul>
+        <li *ngFor="let i of allUnavailability">
+          <div>
+            <strong>{{ i.note || 'Indisponibilità' }}</strong><br />
+            <small>{{ i.startDate | date:'short' }} → {{ i.endDate | date:'short' }}</small><br />
+            <em>Ripetizione: {{ i.recurrence }}</em>
+          </div>
+          <div class="list-buttons">
+            <button (click)="editExisting(i)">Modifica</button>
+            <button *ngIf="i._id" (click)="deleteExisting(i._id)">Elimina</button>
+          </div>
+        </li>
+      </ul>
+    </div>
   </div>
 </div>

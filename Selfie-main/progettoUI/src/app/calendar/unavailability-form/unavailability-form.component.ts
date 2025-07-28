@@ -1,6 +1,7 @@
-import { Component, EventEmitter, Output } from '@angular/core';
+import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { Unavailability } from '../../services/unavailability.service';
 
 @Component({
   selector: 'app-unavailability-form',
@@ -10,11 +11,17 @@ import { FormsModule } from '@angular/forms';
   styleUrls: ['./unavailability-form.component.css']
 })
 export class UnavailabilityFormComponent {
+  @Input() allUnavailability: Unavailability[] = [];
+
   @Output() submitted = new EventEmitter<any>();
   @Output() cancelled = new EventEmitter<void>();
+  @Output() requestDelete = new EventEmitter<string>();
+  @Output() requestEdit = new EventEmitter<Unavailability>();
 
   showForm = false;
+  mode: 'add' | 'list' = 'add';
 
+  // campi del form
   startDate: string = '';
   startTime: string = '';
   endDate: string = '';
@@ -23,8 +30,9 @@ export class UnavailabilityFormComponent {
   note: string = '';
 
   openForm() {
-    this.reset();  // Pulisce sempre il form prima di aprirlo
+    this.reset();
     this.showForm = true;
+    this.mode = 'add';
   }
 
   openFormWith(item: any) {
@@ -35,11 +43,12 @@ export class UnavailabilityFormComponent {
     this.recurrence = item.recurrence;
     this.note = item.note || '';
     this.showForm = true;
+    this.mode = 'add';
   }
 
   submit() {
-    const start = new Date(`${this.startDate}T${this.startTime}`);
-    const end = new Date(`${this.endDate}T${this.endTime}`);
+    const start = new Date(`${this.startDate}T${this.startTime || '00:00'}`);
+    const end = new Date(`${this.endDate}T${this.endTime || '00:00'}`);
 
     this.submitted.emit({
       startDate: start,
@@ -64,5 +73,17 @@ export class UnavailabilityFormComponent {
     this.recurrence = 'none';
     this.note = '';
     this.showForm = false;
+    this.mode = 'add';
+  }
+
+  // chiamato dalla lista interna
+  editExisting(item: Unavailability) {
+    this.openFormWith(item);
+  }
+
+  deleteExisting(id: string) {
+    if (confirm('Vuoi eliminare questa indisponibilità?')) {
+      this.requestDelete.emit(id);
+    }
   }
 }

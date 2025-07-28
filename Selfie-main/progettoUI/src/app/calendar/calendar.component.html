@@ -140,10 +140,14 @@
   (formClosed)="onFormClosed()">
 </app-event-form>
 
-<!-- MODALE UNAVAILABILITY-FORM SEPARATO -->
+<!-- MODALE PER INDISPONIBILITÀ -->
 <app-unavailability-form
   *ngIf="showUnavailabilityForm"
+  [allUnavailability]="unavailability"
   (submitted)="aggiungiUnavailability($event)"
   (cancelled)="closeUnavailabilityForm()"
+  (requestDelete)="eliminaUnavailability($event)"
+  (requestEdit)="modificaUnavailability($event)"
   #unavailabilityForm>
 </app-unavailability-form>
+
